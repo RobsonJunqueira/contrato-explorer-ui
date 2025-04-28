@@ -27,16 +27,6 @@ export function useContracts() {
           variant: "destructive",
         });
       }
-    },
-    onSettled: (_data, error) => {
-      if (error) {
-        console.error("Error fetching contracts:", error);
-        toast({
-          title: "Erro ao carregar contratos",
-          description: "Usando dados de exemplo para visualização",
-          variant: "destructive",
-        });
-      }
     }
   });
 

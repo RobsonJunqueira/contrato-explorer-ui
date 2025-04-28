@@ -1,7 +1,6 @@
-
 import { Contract, ContractFilters } from "../types/Contract";
 
-// Updated API URL to use HTTP instead of HTTPS
+// Using HTTP as requested by the user
 const API_URL = "http://200.19.215.246:3000/public/question/fe7ca3d2-cb3c-441f-a181-265205566b99.json";
 
 // Mock data to use when API is unavailable
@@ -54,7 +53,6 @@ const mockContracts: Contract[] = [
     contato_gestor: "Carlos Oliveira - (41) 99999-9012",
     dat_publicacao: "2022-08-10"
   },
-  // Adding more mock data for better testing
   {
     id: "4",
     num_contrato: "CONT-2023-045",
@@ -99,8 +97,7 @@ export async function fetchContracts(): Promise<Contract[]> {
     
     const response = await fetch(API_URL, { 
       signal: controller.signal,
-      // Disable CORS and SSL verification for development
-      mode: 'cors',
+      // No CORS restrictions as the URL is considered safe
       headers: {
         'Content-Type': 'application/json'
       }
