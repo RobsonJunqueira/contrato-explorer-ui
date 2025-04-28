@@ -1,7 +1,7 @@
 
 import { Contract, ContractFilters } from "../types/Contract";
 
-const API_URL = "http://200.19.215.246:3000/public/question/fe7ca3d2-cb3c-441f-a181-265205566b99.json";
+const API_URL = "https://200.19.215.246:3000/public/question/fe7ca3d2-cb3c-441f-a181-265205566b99.json";
 
 // Mock data to use when API is unavailable
 const mockContracts: Contract[] = [
@@ -52,22 +52,60 @@ const mockContracts: Contract[] = [
     object_contrato: "Licenças de uso de software ERP",
     contato_gestor: "Carlos Oliveira - (41) 99999-9012",
     dat_publicacao: "2022-08-10"
+  },
+  // Adding more mock data for better testing
+  {
+    id: "4",
+    num_contrato: "CONT-2023-045",
+    dsc_resumo: "Serviço de limpeza",
+    nom_credor: "Limpeza Total Ltda",
+    num_cnpj_cpf: "45.678.901/0001-34",
+    dat_inicio: "2023-03-01",
+    dat_fim: "2024-02-29",
+    val_global: 120000,
+    dias_restantes: 60,
+    status_vigencia: "VIGENTE",
+    observacoes: "Inclui materiais",
+    object_contrato: "Serviços gerais de limpeza e conservação",
+    contato_gestor: "Ana Costa - (41) 99999-5678",
+    dat_publicacao: "2023-02-20"
+  },
+  {
+    id: "5",
+    num_contrato: "CONT-2022-098",
+    dsc_resumo: "Fornecimento de equipamentos de TI",
+    nom_credor: "InfoTech Comércio Ltda",
+    num_cnpj_cpf: "56.789.012/0001-45",
+    dat_inicio: "2022-10-15",
+    dat_fim: "2023-10-14",
+    val_global: 320000,
+    dias_restantes: 0,
+    status_vigencia: "ENCERRADO",
+    observacoes: "Contrato com garantia estendida",
+    object_contrato: "Notebooks, monitores e periféricos",
+    contato_gestor: "Ricardo Alves - (41) 99999-3456",
+    dat_publicacao: "2022-10-10"
   }
 ];
 
 export async function fetchContracts(): Promise<Contract[]> {
   try {
+    console.log("Fetching contracts from API...");
     const response = await fetch(API_URL);
     
     if (!response.ok) {
-      throw new Error(`API request failed with status ${response.status}`);
+      console.log(`API request failed with status ${response.status}`);
+      return mockContracts;
     }
     
     const data = await response.json();
     
     if (!data.data || !Array.isArray(data.data.rows)) {
-      throw new Error("Invalid API response format");
+      console.log("Invalid API response format");
+      return mockContracts;
     }
+    
+    console.log(`Successfully fetched ${data.data.rows.length} contracts`);
     
     // Map the rows to our Contract interface
     return data.data.rows.map((row: any, index: number) => ({
@@ -88,7 +126,7 @@ export async function fetchContracts(): Promise<Contract[]> {
     }));
   } catch (error) {
     console.error("Failed to fetch contracts:", error);
-    // Return mock data when API fails
+    // Always return mock data when API fails
     return mockContracts;
   }
 }

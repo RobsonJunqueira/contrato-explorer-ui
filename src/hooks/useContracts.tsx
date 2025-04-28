@@ -3,8 +3,10 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { fetchContracts, filterContracts } from "../lib/api";
 import { Contract, ContractFilters } from "../types/Contract";
+import { useToast } from "@/components/ui/use-toast";
 
 export function useContracts() {
+  const { toast } = useToast();
   const [filters, setFilters] = useState<ContractFilters>({
     num_contrato: "",
     nom_credor: "",
@@ -14,8 +16,16 @@ export function useContracts() {
   const { data: allContracts = [], isLoading, error } = useQuery({
     queryKey: ["contracts"],
     queryFn: fetchContracts,
+    retry: 2,
     retryDelay: 1000,
-    retry: 1
+    onError: (error) => {
+      console.error("Error fetching contracts:", error);
+      toast({
+        title: "Erro ao carregar contratos",
+        description: "Usando dados de exemplo para visualização",
+        variant: "destructive",
+      });
+    }
   });
 
   const filteredContracts = filterContracts(allContracts, filters);
