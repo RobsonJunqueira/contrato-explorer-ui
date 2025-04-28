@@ -1,7 +1,8 @@
 
 import { Contract, ContractFilters } from "../types/Contract";
 
-const API_URL = "https://200.19.215.246:3000/public/question/fe7ca3d2-cb3c-441f-a181-265205566b99.json";
+// Updated API URL to use HTTP instead of HTTPS
+const API_URL = "http://200.19.215.246:3000/public/question/fe7ca3d2-cb3c-441f-a181-265205566b99.json";
 
 // Mock data to use when API is unavailable
 const mockContracts: Contract[] = [
@@ -91,7 +92,21 @@ const mockContracts: Contract[] = [
 export async function fetchContracts(): Promise<Contract[]> {
   try {
     console.log("Fetching contracts from API...");
-    const response = await fetch(API_URL);
+    
+    // Add a timeout to the fetch request
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    
+    const response = await fetch(API_URL, { 
+      signal: controller.signal,
+      // Disable CORS and SSL verification for development
+      mode: 'cors',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    clearTimeout(timeoutId);
     
     if (!response.ok) {
       console.log(`API request failed with status ${response.status}`);
@@ -143,8 +158,8 @@ export function filterContracts(contracts: Contract[], filters: ContractFilters)
       return false;
     }
     
-    // Filter by status_vigencia
-    if (filters.status_vigencia && contract.status_vigencia !== filters.status_vigencia) {
+    // Filter by status_vigencia (skip if "todos" is selected)
+    if (filters.status_vigencia && filters.status_vigencia !== "todos" && contract.status_vigencia !== filters.status_vigencia) {
       return false;
     }
     

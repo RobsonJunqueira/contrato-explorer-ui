@@ -18,13 +18,25 @@ export function useContracts() {
     queryFn: fetchContracts,
     retry: 2,
     retryDelay: 1000,
-    onError: (error) => {
-      console.error("Error fetching contracts:", error);
-      toast({
-        title: "Erro ao carregar contratos",
-        description: "Usando dados de exemplo para visualização",
-        variant: "destructive",
-      });
+    meta: {
+      errorHandler: (error: any) => {
+        console.error("Error fetching contracts:", error);
+        toast({
+          title: "Erro ao carregar contratos",
+          description: "Usando dados de exemplo para visualização",
+          variant: "destructive",
+        });
+      }
+    },
+    onSettled: (_data, error) => {
+      if (error) {
+        console.error("Error fetching contracts:", error);
+        toast({
+          title: "Erro ao carregar contratos",
+          description: "Usando dados de exemplo para visualização",
+          variant: "destructive",
+        });
+      }
     }
   });
 
