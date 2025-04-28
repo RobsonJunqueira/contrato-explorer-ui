@@ -13,7 +13,9 @@ export function useContracts() {
 
   const { data: allContracts = [], isLoading, error } = useQuery({
     queryKey: ["contracts"],
-    queryFn: fetchContracts
+    queryFn: fetchContracts,
+    retryDelay: 1000,
+    retry: 1
   });
 
   const filteredContracts = filterContracts(allContracts, filters);

@@ -56,7 +56,7 @@ export function FilterBar({ filters, onFilterChange, statusOptions }: FilterBarP
             Status de Vigência
           </label>
           <Select
-            value={filters.status_vigencia}
+            value={filters.status_vigencia || ""}
             onValueChange={value => handleFilterChange("status_vigencia", value)}
           >
             <SelectTrigger className="w-full">
