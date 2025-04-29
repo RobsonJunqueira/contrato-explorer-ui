@@ -1,32 +1,68 @@
 
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
-import { fetchContracts, filterContracts } from "../lib/api";
+import { useState, useEffect } from "react";
+import { fetchContracts, filterContracts, updateContract } from "../lib/api";
 import { Contract, ContractFilters } from "../types/Contract";
 import { useToast } from "@/components/ui/use-toast";
 
+// Helper to get stored values from localStorage
+const getStoredValue = <T,>(key: string, defaultValue: T): T => {
+  if (typeof window === "undefined") return defaultValue;
+  try {
+    const item = window.localStorage.getItem(key);
+    return item ? JSON.parse(item) : defaultValue;
+  } catch (error) {
+    console.error("Error reading from localStorage:", error);
+    return defaultValue;
+  }
+};
+
 export function useContracts() {
   const { toast } = useToast();
-  const [filters, setFilters] = useState<ContractFilters>({
-    num_contrato: "",
-    nom_credor: "",
-    status_vigencia: "",
-    class1_setor: "_all_",
-    nmSubacao: "_all_",
-    dsc_objeto_contrato: "",
-    classif1: "_all_",
-    classif2: "_all_"
-  });
+  const [filters, setFilters] = useState<ContractFilters>(() => 
+    getStoredValue("contractFilters", {
+      num_contrato: "",
+      nom_credor: "",
+      status_vigencia: "",
+      class1_setor: "_all_",
+      nmSubacao: "_all_",
+      dsc_objeto_contrato: "",
+      classif1: "_all_",
+      classif2: "_all_"
+    })
+  );
   
-  // Add pagination state
-  const [currentPage, setCurrentPage] = useState(1);
+  // Add pagination state with localStorage persistence
+  const [currentPage, setCurrentPage] = useState(() => 
+    getStoredValue("contractCurrentPage", 1)
+  );
   const [itemsPerPage] = useState(20);
   
-  // Add sorting state
-  const [sortField, setSortField] = useState<keyof Contract>("num_contrato");
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  // Add sorting state with localStorage persistence
+  const [sortField, setSortField] = useState<keyof Contract>(() => 
+    getStoredValue("contractSortField", "num_contrato" as keyof Contract)
+  );
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">(() => 
+    getStoredValue("contractSortDirection", "asc" as "asc" | "desc")
+  );
 
-  const { data: allContracts = [], isLoading, error } = useQuery({
+  // Save filters to localStorage when they change
+  useEffect(() => {
+    localStorage.setItem("contractFilters", JSON.stringify(filters));
+  }, [filters]);
+
+  // Save pagination state to localStorage when it changes
+  useEffect(() => {
+    localStorage.setItem("contractCurrentPage", JSON.stringify(currentPage));
+  }, [currentPage]);
+
+  // Save sorting state to localStorage when it changes
+  useEffect(() => {
+    localStorage.setItem("contractSortField", JSON.stringify(sortField));
+    localStorage.setItem("contractSortDirection", JSON.stringify(sortDirection));
+  }, [sortField, sortDirection]);
+
+  const { data: allContracts = [], isLoading, error, refetch } = useQuery({
     queryKey: ["contracts"],
     queryFn: fetchContracts,
     retry: 2,
@@ -110,9 +146,30 @@ export function useContracts() {
     .filter(Boolean)
     .sort();
 
+  // Add contract update function
+  const updateContractField = async (id: string, updates: Partial<Contract>) => {
+    try {
+      await updateContract(id, updates);
+      toast({
+        title: "Contrato atualizado",
+        description: "As informações do contrato foram atualizadas com sucesso.",
+      });
+      refetch();
+      return true;
+    } catch (error) {
+      console.error("Error updating contract:", error);
+      toast({
+        title: "Erro ao atualizar contrato",
+        description: "Não foi possível atualizar as informações do contrato.",
+        variant: "destructive",
+      });
+      return false;
+    }
+  };
+
   return {
     contracts: paginatedContracts,
-    allContracts: sortedContracts,
+    allContracts,
     isLoading,
     error,
     filters,
@@ -130,6 +187,8 @@ export function useContracts() {
     sortField,
     setSortField,
     sortDirection,
-    setSortDirection
+    setSortDirection,
+    // Updates
+    updateContractField
   };
 }

@@ -1,4 +1,3 @@
-
 import { Contract, ContractFilters } from "../types/Contract";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -198,4 +197,26 @@ export function filterContracts(contracts: Contract[], filters: ContractFilters)
     
     return true;
   });
+}
+
+export async function updateContract(id: string, updates: Partial<Contract>): Promise<boolean> {
+  try {
+    console.log("Updating contract in Supabase:", id, updates);
+    
+    const { error } = await supabase
+      .from('contratos')
+      .update(updates)
+      .eq('num_contrato', id);
+    
+    if (error) {
+      console.error("Error updating contract in Supabase:", error.message);
+      throw new Error(error.message);
+    }
+    
+    console.log("Contract updated successfully");
+    return true;
+  } catch (error) {
+    console.error("Failed to update contract:", error);
+    throw error;
+  }
 }

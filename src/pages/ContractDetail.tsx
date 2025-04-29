@@ -10,7 +10,7 @@ const ContractDetail = () => {
   const { allContracts, isLoading, error } = useContracts();
   const { toast } = useToast();
   
-  const contract = allContracts.find(c => c.id === id);
+  const contract = allContracts.find(c => c.id === id || c.num_contrato === id);
 
   useEffect(() => {
     if (error) {

@@ -1,19 +1,61 @@
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Contract } from "@/types/Contract";
 import { formatCurrency } from "@/lib/formatters";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, ExternalLink } from "lucide-react";
+import { ArrowLeft, ExternalLink, Check, X, Edit } from "lucide-react";
+import { useContracts } from "@/hooks/useContracts";
+import { useToast } from "@/components/ui/use-toast";
 
 interface ContractDetailViewProps {
   contract: Contract | undefined;
   isLoading: boolean;
 }
 
+type EditableField = "link_processo" | "link_processo_providencia" | "processo_providencia";
+
 export function ContractDetailView({ contract, isLoading }: ContractDetailViewProps) {
   const navigate = useNavigate();
+  const { updateContractField } = useContracts();
+  const { toast } = useToast();
+  
+  const [editingField, setEditingField] = useState<EditableField | null>(null);
+  const [fieldValue, setFieldValue] = useState<string>("");
+
+  const handleEditClick = (field: EditableField, value: string | undefined) => {
+    setEditingField(field);
+    setFieldValue(value || "");
+  };
+
+  const handleSaveClick = async () => {
+    if (!contract || !editingField) return;
+    
+    try {
+      const success = await updateContractField(contract.id, { [editingField]: fieldValue });
+      if (success) {
+        // Update the local contract data to reflect changes immediately
+        contract[editingField] = fieldValue;
+      }
+    } catch (error) {
+      console.error("Error saving field:", error);
+      toast({
+        title: "Erro ao salvar",
+        description: "Não foi possível salvar as alterações.",
+        variant: "destructive",
+      });
+    }
+    
+    setEditingField(null);
+  };
+
+  const handleCancelClick = () => {
+    setEditingField(null);
+  };
 
   if (isLoading) {
     return (
@@ -38,8 +80,82 @@ export function ContractDetailView({ contract, isLoading }: ContractDetailViewPr
     );
   }
 
-  // Create transparency portal URL
+  // Create transparency portal URL with the correct unit code
   const transparencyPortalURL = `https://www.transparencia.sc.gov.br/contratos/extratosigef?nucontratofiltro%5B%5D=${contract.num_contrato}&unidadegestorafiltro%5B%5D=${contract.cod_unidade_gestora || ""}&gestaofiltro%5B%5D=1`;
+
+  const renderEditableField = (
+    field: EditableField,
+    value: string | undefined,
+    label: string,
+    isTextarea: boolean = false
+  ) => {
+    const isEditing = editingField === field;
+    
+    if (isEditing) {
+      return (
+        <div>
+          <h3 className="text-sm font-semibold text-gray-500">{label}</h3>
+          <div className="flex mt-1">
+            {isTextarea ? (
+              <Textarea
+                value={fieldValue}
+                onChange={(e) => setFieldValue(e.target.value)}
+                className="flex-grow mr-2"
+                rows={2}
+              />
+            ) : (
+              <Input
+                value={fieldValue}
+                onChange={(e) => setFieldValue(e.target.value)}
+                className="flex-grow mr-2"
+              />
+            )}
+            <Button 
+              size="icon"
+              variant="ghost" 
+              className="h-10 w-10 text-green-600"
+              onClick={handleSaveClick}
+            >
+              <Check className="h-5 w-5" />
+            </Button>
+            <Button 
+              size="icon"
+              variant="ghost" 
+              className="h-10 w-10 text-red-600"
+              onClick={handleCancelClick}
+            >
+              <X className="h-5 w-5" />
+            </Button>
+          </div>
+        </div>
+      );
+    }
+    
+    return (
+      <div className="group relative">
+        <h3 className="text-sm font-semibold text-gray-500">{label}</h3>
+        <div className="flex items-center">
+          <div className="text-navy-900 font-medium flex-grow">
+            {field.includes("link") && value ? (
+              <a href={value} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline font-medium flex items-center">
+                Acessar <ExternalLink className="h-3 w-3 ml-1" />
+              </a>
+            ) : (
+              value || "-"
+            )}
+          </div>
+          <Button
+            size="icon"
+            variant="ghost"
+            className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8"
+            onClick={() => handleEditClick(field, value)}
+          >
+            <Edit className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="space-y-6">
@@ -141,14 +257,11 @@ export function ContractDetailView({ contract, isLoading }: ContractDetailViewPr
                 <p className="text-navy-900 font-medium">{contract.dsc_situacao_contrato || contract.cod_situacao_contrato || "-"}</p>
               </div>
               
-              <div>
-                <h3 className="text-sm font-semibold text-gray-500">Link do Processo</h3>
-                {contract.link_processo ? (
-                  <a href={contract.link_processo} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline font-medium flex items-center">
-                    Acessar <ExternalLink className="h-3 w-3 ml-1" />
-                  </a>
-                ) : "-"}
-              </div>
+              {renderEditableField(
+                "link_processo",
+                contract.link_processo,
+                "Link do Processo"
+              )}
               
               <div>
                 <h3 className="text-sm font-semibold text-gray-500">Código da Subação</h3>
@@ -170,14 +283,11 @@ export function ContractDetailView({ contract, isLoading }: ContractDetailViewPr
                 <p className="text-navy-900 font-medium">{contract.val_contrato_original ? formatCurrency(contract.val_contrato_original) : "-"}</p>
               </div>
               
-              <div>
-                <h3 className="text-sm font-semibold text-gray-500">Link do Processo de Providência</h3>
-                {contract.link_processo_providencia ? (
-                  <a href={contract.link_processo_providencia} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline font-medium flex items-center">
-                    Acessar <ExternalLink className="h-3 w-3 ml-1" />
-                  </a>
-                ) : "-"}
-              </div>
+              {renderEditableField(
+                "link_processo_providencia",
+                contract.link_processo_providencia,
+                "Link do Processo de Providência"
+              )}
               
               <div>
                 <h3 className="text-sm font-semibold text-gray-500">Código da Subação</h3>
@@ -288,10 +398,12 @@ export function ContractDetailView({ contract, isLoading }: ContractDetailViewPr
                 <p className="text-navy-900 font-medium">{contract.cod_unidade_gestora || "-"}</p>
               </div>
               
-              <div>
-                <h3 className="text-sm font-semibold text-gray-500">Processo de Providência</h3>
-                <p className="text-navy-900 font-medium">{contract.processo_providencia || "-"}</p>
-              </div>
+              {renderEditableField(
+                "processo_providencia",
+                contract.processo_providencia,
+                "Processo de Providência",
+                true
+              )}
             </div>
             
             <Separator />
