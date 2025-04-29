@@ -5,6 +5,7 @@ import { ContractFilters } from "@/types/Contract";
 import { Search } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { useEffect } from "react";
 
 interface FilterBarProps {
   filters: ContractFilters;
@@ -12,11 +13,26 @@ interface FilterBarProps {
   statusOptions: string[];
   sectorOptions: string[];
   subacaoOptions: string[];
+  classif1Options: string[];
+  classif2Options: string[];
 }
 
-export function FilterBar({ filters, onFilterChange, statusOptions, sectorOptions, subacaoOptions }: FilterBarProps) {
+export function FilterBar({ 
+  filters, 
+  onFilterChange, 
+  statusOptions, 
+  sectorOptions, 
+  subacaoOptions,
+  classif1Options,
+  classif2Options 
+}: FilterBarProps) {
   const handleFilterChange = (key: keyof ContractFilters, value: string) => {
-    onFilterChange({ ...filters, [key]: value });
+    // If classif1 changes, reset classif2
+    if (key === "classif1") {
+      onFilterChange({ ...filters, [key]: value, classif2: "_all_" });
+    } else {
+      onFilterChange({ ...filters, [key]: value });
+    }
   };
 
   const handleSwitchChange = (checked: boolean) => {
@@ -120,6 +136,52 @@ export function FilterBar({ filters, onFilterChange, statusOptions, sectorOption
           </Select>
         </div>
         
+        {/* Classification filters (classif1 and classif2) */}
+        <div className="space-y-2">
+          <label htmlFor="classif1" className="text-sm font-medium text-gray-700">
+            Classificação - Nível 1
+          </label>
+          <Select
+            value={filters.classif1 || "_all_"}
+            onValueChange={value => handleFilterChange("classif1", value)}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Selecione uma classificação" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="_all_">Todas</SelectItem>
+              {classif1Options.filter(Boolean).map(option => (
+                <SelectItem key={option} value={option}>
+                  {option}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <label htmlFor="classif2" className="text-sm font-medium text-gray-700">
+            Classificação - Nível 2
+          </label>
+          <Select
+            value={filters.classif2 || "_all_"}
+            onValueChange={value => handleFilterChange("classif2", value)}
+            disabled={filters.classif1 === "_all_"}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder={filters.classif1 === "_all_" ? "Selecione Nível 1 primeiro" : "Selecione uma subclassificação"} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="_all_">Todas</SelectItem>
+              {classif2Options.filter(Boolean).map(option => (
+                <SelectItem key={option} value={option}>
+                  {option}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        
         <div className="space-y-2">
           <label htmlFor="dsc_objeto_contrato" className="text-sm font-medium text-gray-700">
             Objeto
@@ -139,4 +201,3 @@ export function FilterBar({ filters, onFilterChange, statusOptions, sectorOption
     </div>
   );
 }
-

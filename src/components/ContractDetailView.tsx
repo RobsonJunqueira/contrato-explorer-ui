@@ -5,7 +5,7 @@ import { Separator } from "@/components/ui/separator";
 import { Contract } from "@/types/Contract";
 import { formatCurrency } from "@/lib/formatters";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ExternalLink } from "lucide-react";
 
 interface ContractDetailViewProps {
   contract: Contract | undefined;
@@ -37,6 +37,9 @@ export function ContractDetailView({ contract, isLoading }: ContractDetailViewPr
       </Card>
     );
   }
+
+  // Create transparency portal URL
+  const transparencyPortalURL = `https://www.transparencia.sc.gov.br/contratos/extratosigef?nucontratofiltro%5B%5D=${contract.num_contrato}&unidadegestorafiltro%5B%5D=${contract.cod_unidade_gestora || ""}&gestaofiltro%5B%5D=1`;
 
   return (
     <div className="space-y-6">
@@ -77,29 +80,155 @@ export function ContractDetailView({ contract, isLoading }: ContractDetailViewPr
             <Separator />
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Main contract information - following original table order */}
+              <div>
+                <h3 className="text-sm font-semibold text-gray-500">Número do Contrato</h3>
+                <p className="text-navy-900 font-medium">{contract.num_contrato}</p>
+              </div>
+              
+              <div>
+                <h3 className="text-sm font-semibold text-gray-500">Tipo de Documento Legal</h3>
+                <p className="text-navy-900 font-medium">{contract.dsc_tipo_documento_legal || contract.cod_tipo_documento_legal || "-"}</p>
+              </div>
+              
+              <div>
+                <h3 className="text-sm font-semibold text-gray-500">Classificação do Contrato</h3>
+                <p className="text-navy-900 font-medium">{contract["nom-contrato_classificacao"] || contract.cod_contrato_classificacao || "-"}</p>
+              </div>
+              
+              <div>
+                <h3 className="text-sm font-semibold text-gray-500">Tipo de Contrato</h3>
+                <p className="text-navy-900 font-medium">{contract["dsc_tipo-contrato"] || contract.cod_tipo_contrato || "-"}</p>
+              </div>
+              
+              <div>
+                <h3 className="text-sm font-semibold text-gray-500">Modalidade</h3>
+                <p className="text-navy-900 font-medium">{contract.nom_modalidade || contract.cod_modalidade || "-"}</p>
+              </div>
+              
+              <div>
+                <h3 className="text-sm font-semibold text-gray-500">Número do Edital</h3>
+                <p className="text-navy-900 font-medium">{contract.num_edital || "-"}</p>
+              </div>
+              
               <div>
                 <h3 className="text-sm font-semibold text-gray-500">Credor</h3>
-                <p className="text-navy-900 font-medium">{contract.nom_credor}</p>
+                <p className="text-navy-900 font-medium">{contract.nom_credor || "-"}</p>
               </div>
               
               <div>
                 <h3 className="text-sm font-semibold text-gray-500">CNPJ/CPF</h3>
-                <p className="text-navy-900 font-medium">{contract.num_cnpj_cpf}</p>
+                <p className="text-navy-900 font-medium">{contract.num_cnpj_cpf || contract.num_documento_credor || "-"}</p>
               </div>
               
               <div>
-                <h3 className="text-sm font-semibold text-gray-500">Data de Início</h3>
-                <p className="text-navy-900 font-medium">{contract.dat_inicio}</p>
+                <h3 className="text-sm font-semibold text-gray-500">Email do Credor</h3>
+                <p className="text-navy-900 font-medium">{contract.dsc_email_credor || "-"}</p>
               </div>
               
               <div>
-                <h3 className="text-sm font-semibold text-gray-500">Data de Fim</h3>
-                <p className="text-navy-900 font-medium">{contract.dat_fim}</p>
+                <h3 className="text-sm font-semibold text-gray-500">Responsável PJ do Credor</h3>
+                <p className="text-navy-900 font-medium">{contract.nom_responsavel_pj_credor || "-"}</p>
+              </div>
+              
+              <div>
+                <h3 className="text-sm font-semibold text-gray-500">Representante do Credor</h3>
+                <p className="text-navy-900 font-medium">{contract.nom_representante_credor || "-"}</p>
+              </div>
+              
+              <div>
+                <h3 className="text-sm font-semibold text-gray-500">Situação do Contrato</h3>
+                <p className="text-navy-900 font-medium">{contract.dsc_situacao_contrato || contract.cod_situacao_contrato || "-"}</p>
+              </div>
+              
+              <div>
+                <h3 className="text-sm font-semibold text-gray-500">Link do Processo</h3>
+                {contract.link_processo ? (
+                  <a href={contract.link_processo} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline font-medium flex items-center">
+                    Acessar <ExternalLink className="h-3 w-3 ml-1" />
+                  </a>
+                ) : "-"}
+              </div>
+              
+              <div>
+                <h3 className="text-sm font-semibold text-gray-500">Código da Subação</h3>
+                <p className="text-navy-900 font-medium">{contract.cod_subacao || "-"}</p>
+              </div>
+              
+              <div>
+                <h3 className="text-sm font-semibold text-gray-500">Setor Responsável</h3>
+                <p className="text-navy-900 font-medium">{contract.class1_setor || "-"}</p>
+              </div>
+              
+              <div>
+                <h3 className="text-sm font-semibold text-gray-500">Tipo</h3>
+                <p className="text-navy-900 font-medium">{contract.class2_tipo || "-"}</p>
+              </div>
+              
+              <div>
+                <h3 className="text-sm font-semibold text-gray-500">Valor Original do Contrato</h3>
+                <p className="text-navy-900 font-medium">{contract.val_contrato_original ? formatCurrency(contract.val_contrato_original) : "-"}</p>
+              </div>
+              
+              <div>
+                <h3 className="text-sm font-semibold text-gray-500">Link do Processo de Providência</h3>
+                {contract.link_processo_providencia ? (
+                  <a href={contract.link_processo_providencia} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline font-medium flex items-center">
+                    Acessar <ExternalLink className="h-3 w-3 ml-1" />
+                  </a>
+                ) : "-"}
+              </div>
+              
+              <div>
+                <h3 className="text-sm font-semibold text-gray-500">Código da Subação</h3>
+                <p className="text-navy-900 font-medium">{contract.codSubacao || "-"}</p>
+              </div>
+              
+              <div>
+                <h3 className="text-sm font-semibold text-gray-500">Classificação 1</h3>
+                <p className="text-navy-900 font-medium">{contract.classif1 || "-"}</p>
+              </div>
+              
+              <div>
+                <h3 className="text-sm font-semibold text-gray-500">Classificação 2</h3>
+                <p className="text-navy-900 font-medium">{contract.classif2 || "-"}</p>
+              </div>
+              
+              <div>
+                <h3 className="text-sm font-semibold text-gray-500">Programa</h3>
+                <p className="text-navy-900 font-medium">{contract.nmPrograma || "-"}</p>
+              </div>
+              
+              <div>
+                <h3 className="text-sm font-semibold text-gray-500">Subação</h3>
+                <p className="text-navy-900 font-medium">{contract.nmSubacao || "-"}</p>
+              </div>
+              
+              <div>
+                <h3 className="text-sm font-semibold text-gray-500">Valor Original Atualizado</h3>
+                <p className="text-navy-900 font-medium">
+                  {contract.val_contrato_original_atualizado ? formatCurrency(contract.val_contrato_original_atualizado) : "-"}
+                </p>
               </div>
               
               <div>
                 <h3 className="text-sm font-semibold text-gray-500">Valor Global</h3>
-                <p className="text-navy-900 font-medium">{formatCurrency(contract.val_global)}</p>
+                <p className="text-navy-900 font-medium">{contract.val_global ? formatCurrency(contract.val_global) : "-"}</p>
+              </div>
+              
+              <div>
+                <h3 className="text-sm font-semibold text-gray-500">Data de Carga</h3>
+                <p className="text-navy-900 font-medium">{contract.dat_carga || "-"}</p>
+              </div>
+              
+              <div>
+                <h3 className="text-sm font-semibold text-gray-500">Status de Vigência</h3>
+                <p className="text-navy-900 font-medium">{contract.status_vigencia || "-"}</p>
+              </div>
+              
+              <div>
+                <h3 className="text-sm font-semibold text-gray-500">Data Atual</h3>
+                <p className="text-navy-900 font-medium">{contract.dat_atual || "-"}</p>
               </div>
               
               <div>
@@ -119,166 +248,57 @@ export function ContractDetailView({ contract, isLoading }: ContractDetailViewPr
                 </p>
               </div>
               
-              {contract.dat_publicacao && (
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-500">Data de Publicação</h3>
-                  <p className="text-navy-900 font-medium">{contract.dat_publicacao}</p>
-                </div>
-              )}
+              <div>
+                <h3 className="text-sm font-semibold text-gray-500">Data de Assinatura</h3>
+                <p className="text-navy-900 font-medium">{contract.dat_assinatura || "-"}</p>
+              </div>
               
-              {contract.contato_gestor && (
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-500">Contato do Gestor</h3>
-                  <p className="text-navy-900 font-medium">{contract.contato_gestor}</p>
-                </div>
-              )}
-
-              {contract.class1_setor && (
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-500">Setor Responsável</h3>
-                  <p className="text-navy-900 font-medium">{contract.class1_setor}</p>
-                </div>
-              )}
+              <div>
+                <h3 className="text-sm font-semibold text-gray-500">Data de Início de Vigência</h3>
+                <p className="text-navy-900 font-medium">{contract.dat_inicio_vigencia || contract.dat_inicio || "-"}</p>
+              </div>
               
-              {contract.nmSubacao && (
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-500">Subação</h3>
-                  <p className="text-navy-900 font-medium">{contract.nmSubacao}</p>
-                </div>
-              )}
+              <div>
+                <h3 className="text-sm font-semibold text-gray-500">Data de Fim de Vigência</h3>
+                <p className="text-navy-900 font-medium">{contract.dat_fim_vigencia || contract.dat_fim || "-"}</p>
+              </div>
               
-              {contract.cod_tipo_documento_legal && (
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-500">Tipo de Documento Legal</h3>
-                  <p className="text-navy-900 font-medium">{contract.dsc_tipo_documento_legal || contract.cod_tipo_documento_legal}</p>
-                </div>
-              )}
+              <div>
+                <h3 className="text-sm font-semibold text-gray-500">Data Fim de Vigência Atual</h3>
+                <p className="text-navy-900 font-medium">{contract.dat_fim_vigencia_atual || "-"}</p>
+              </div>
               
-              {contract.cod_modalidade && (
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-500">Modalidade</h3>
-                  <p className="text-navy-900 font-medium">{contract.nom_modalidade || contract.cod_modalidade}</p>
-                </div>
-              )}
+              <div>
+                <h3 className="text-sm font-semibold text-gray-500">Número do Documento Legal</h3>
+                <p className="text-navy-900 font-medium">{contract.num_documento_legal || "-"}</p>
+              </div>
               
-              {contract.num_edital && (
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-500">Número do Edital</h3>
-                  <p className="text-navy-900 font-medium">{contract.num_edital}</p>
-                </div>
-              )}
+              <div>
+                <h3 className="text-sm font-semibold text-gray-500">Número do Processo</h3>
+                <p className="text-navy-900 font-medium">{contract.num_processo || "-"}</p>
+              </div>
               
-              {contract.dsc_email_credor && (
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-500">Email do Credor</h3>
-                  <p className="text-navy-900 font-medium">{contract.dsc_email_credor}</p>
-                </div>
-              )}
+              <div>
+                <h3 className="text-sm font-semibold text-gray-500">Resumo do Contrato</h3>
+                <p className="text-navy-900 font-medium">{contract.dsc_resumo_contrato || "-"}</p>
+              </div>
               
-              {contract.nom_responsavel_pj_credor && (
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-500">Responsável PJ do Credor</h3>
-                  <p className="text-navy-900 font-medium">{contract.nom_responsavel_pj_credor}</p>
-                </div>
-              )}
+              <div>
+                <h3 className="text-sm font-semibold text-gray-500">Unidade Gestora</h3>
+                <p className="text-navy-900 font-medium">{contract.cod_unidade_gestora || "-"}</p>
+              </div>
               
-              {contract.nom_representante_credor && (
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-500">Representante do Credor</h3>
-                  <p className="text-navy-900 font-medium">{contract.nom_representante_credor}</p>
-                </div>
-              )}
-              
-              {contract.cod_situacao_contrato && (
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-500">Situação do Contrato</h3>
-                  <p className="text-navy-900 font-medium">{contract.dsc_situacao_contrato || contract.cod_situacao_contrato}</p>
-                </div>
-              )}
-              
-              {contract.link_processo && (
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-500">Link do Processo</h3>
-                  <a href={contract.link_processo} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline font-medium">{contract.link_processo}</a>
-                </div>
-              )}
-              
-              {contract.val_contrato_original && (
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-500">Valor Original do Contrato</h3>
-                  <p className="text-navy-900 font-medium">{formatCurrency(contract.val_contrato_original)}</p>
-                </div>
-              )}
-              
-              {contract.val_contrato_original_atualizado && (
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-500">Valor Original Atualizado</h3>
-                  <p className="text-navy-900 font-medium">{formatCurrency(contract.val_contrato_original_atualizado)}</p>
-                </div>
-              )}
-              
-              {contract.dat_carga && (
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-500">Data de Carga</h3>
-                  <p className="text-navy-900 font-medium">{contract.dat_carga}</p>
-                </div>
-              )}
-              
-              {contract.dat_atual && (
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-500">Data Atual</h3>
-                  <p className="text-navy-900 font-medium">{contract.dat_atual}</p>
-                </div>
-              )}
-              
-              {contract.dat_fim_vigencia_atual && (
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-500">Data Fim de Vigência Atual</h3>
-                  <p className="text-navy-900 font-medium">{contract.dat_fim_vigencia_atual}</p>
-                </div>
-              )}
-              
-              {contract.num_documento_legal && (
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-500">Número do Documento Legal</h3>
-                  <p className="text-navy-900 font-medium">{contract.num_documento_legal}</p>
-                </div>
-              )}
-              
-              {contract.num_processo && (
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-500">Número do Processo</h3>
-                  <p className="text-navy-900 font-medium">{contract.num_processo}</p>
-                </div>
-              )}
-              
-              {contract.class2_tipo && (
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-500">Tipo</h3>
-                  <p className="text-navy-900 font-medium">{contract.class2_tipo}</p>
-                </div>
-              )}
-              
-              {contract.nmPrograma && (
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-500">Programa</h3>
-                  <p className="text-navy-900 font-medium">{contract.nmPrograma}</p>
-                </div>
-              )}
+              <div>
+                <h3 className="text-sm font-semibold text-gray-500">Processo de Providência</h3>
+                <p className="text-navy-900 font-medium">{contract.processo_providencia || "-"}</p>
+              </div>
             </div>
             
             <Separator />
             
-            {contract.object_contrato && (
+            {contract.dsc_objeto_contrato && (
               <div>
                 <h3 className="text-lg font-semibold text-navy-900">Objeto do Contrato</h3>
-                <p className="text-gray-700 mt-1">{contract.object_contrato}</p>
-              </div>
-            )}
-            
-            {contract.dsc_objeto_contrato && contract.dsc_objeto_contrato !== contract.object_contrato && (
-              <div>
-                <h3 className="text-lg font-semibold text-navy-900">Descrição do Objeto</h3>
                 <p className="text-gray-700 mt-1">{contract.dsc_objeto_contrato}</p>
               </div>
             )}
@@ -289,6 +309,21 @@ export function ContractDetailView({ contract, isLoading }: ContractDetailViewPr
                 <p className="text-gray-700 mt-1">{contract.observacoes}</p>
               </div>
             )}
+            
+            <Separator />
+            
+            {/* Portal da Transparência link */}
+            <div className="pt-4">
+              <a 
+                href={transparencyPortalURL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center text-navy-700 hover:text-navy-900 font-medium"
+              >
+                <ExternalLink className="mr-2 h-5 w-5" />
+                Visualizar no Portal da Transparência
+              </a>
+            </div>
           </div>
         </CardContent>
       </Card>
