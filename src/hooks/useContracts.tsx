@@ -10,7 +10,10 @@ export function useContracts() {
   const [filters, setFilters] = useState<ContractFilters>({
     num_contrato: "",
     nom_credor: "",
-    status_vigencia: ""
+    status_vigencia: "",
+    class1_setor: "",
+    nmSubacao: "",
+    dsc_objeto_contrato: ""
   });
 
   const { data: allContracts = [], isLoading, error } = useQuery({
@@ -36,6 +39,16 @@ export function useContracts() {
   const statusOptions = Array.from(new Set(allContracts.map(c => c.status_vigencia)))
     .filter(Boolean)
     .sort();
+    
+  // Get unique sector values for filter dropdown
+  const sectorOptions = Array.from(new Set(allContracts.map(c => c.class1_setor)))
+    .filter(Boolean)
+    .sort();
+    
+  // Get unique subacao values for filter dropdown
+  const subacaoOptions = Array.from(new Set(allContracts.map(c => c.nmSubacao)))
+    .filter(Boolean)
+    .sort();
 
   return {
     contracts: filteredContracts,
@@ -44,6 +57,8 @@ export function useContracts() {
     error,
     filters,
     setFilters,
-    statusOptions
+    statusOptions,
+    sectorOptions,
+    subacaoOptions
   };
 }

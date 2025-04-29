@@ -1,3 +1,4 @@
+
 import { Contract, ContractFilters } from "../types/Contract";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -120,7 +121,40 @@ export async function fetchContracts(): Promise<Contract[]> {
       observacoes: "",
       object_contrato: row.dsc_objeto_contrato || "",
       contato_gestor: "",
-      dat_publicacao: row.dat_assinatura || ""
+      dat_publicacao: row.dat_assinatura || "",
+      // Additional fields from contratos table
+      class1_setor: row.class1_setor || "",
+      nmSubacao: row.nmSubacao || "",
+      dsc_objeto_contrato: row.dsc_objeto_contrato || "",
+      cod_tipo_documento_legal: row.cod_tipo_documento_legal || "",
+      dsc_tipo_documento_legal: row.dsc_tipo_documento_legal || "",
+      cod_contrato_classificacao: row.cod_contrato_classificacao || "",
+      nom_contrato_classificacao: row["nom-contrato_classificacao"] || "",
+      cod_tipo_contrato: row.cod_tipo_contrato || "",
+      dsc_tipo_contrato: row["dsc_tipo-contrato"] || "",
+      cod_modalidade: row.cod_modalidade || "",
+      nom_modalidade: row.nom_modalidade || "",
+      num_edital: row.num_edital || "",
+      dsc_email_credor: row.dsc_email_credor || "",
+      nom_responsavel_pj_credor: row.nom_responsavel_pj_credor || "",
+      nom_representante_credor: row.nom_representante_credor || "",
+      cod_situacao_contrato: row.cod_situacao_contrato || "",
+      dsc_situacao_contrato: row.dsc_situacao_contrato || "",
+      link_processo: row.link_processo || "",
+      cod_subacao: row.cod_subacao || "",
+      class2_tipo: row.class2_tipo || "",
+      val_contrato_original: parseFloat(row.val_contrato_original) || 0,
+      link_processo_providencia: row.link_processo_providencia || "",
+      codSubacao: row.codSubacao || "",
+      classif1: row.classif1 || "",
+      classif2: row.classif2 || "",
+      nmPrograma: row.nmPrograma || "",
+      val_contrato_original_atualizado: parseFloat(row.val_contrato_original_atualizado) || 0,
+      dat_carga: row.dat_carga || "",
+      dat_atual: row.dat_atual || "",
+      dat_fim_vigencia_atual: row.dat_fim_vigencia_atual || "",
+      num_documento_legal: row.num_documento_legal || "",
+      num_processo: row.num_processo || ""
     }));
   } catch (error) {
     console.error("Failed to fetch contracts:", error);
@@ -141,8 +175,24 @@ export function filterContracts(contracts: Contract[], filters: ContractFilters)
       return false;
     }
     
-    // Filter by status_vigencia (skip if "todos" is selected)
-    if (filters.status_vigencia && filters.status_vigencia !== "todos" && contract.status_vigencia !== filters.status_vigencia) {
+    // Filter by status_vigencia (now works with switch button)
+    if (filters.status_vigencia && contract.status_vigencia !== filters.status_vigencia) {
+      return false;
+    }
+    
+    // Filter by class1_setor (Setor Responsável)
+    if (filters.class1_setor && contract.class1_setor !== filters.class1_setor) {
+      return false;
+    }
+    
+    // Filter by nmSubacao (Subação)
+    if (filters.nmSubacao && contract.nmSubacao !== filters.nmSubacao) {
+      return false;
+    }
+    
+    // Filter by dsc_objeto_contrato (Objeto)
+    if (filters.dsc_objeto_contrato && contract.dsc_objeto_contrato && 
+        !contract.dsc_objeto_contrato.toLowerCase().includes(filters.dsc_objeto_contrato.toLowerCase())) {
       return false;
     }
     

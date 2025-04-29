@@ -12,7 +12,9 @@ const Index = () => {
     error, 
     filters, 
     setFilters, 
-    statusOptions 
+    statusOptions,
+    sectorOptions,
+    subacaoOptions
   } = useContracts();
   
   const { toast } = useToast();
@@ -41,6 +43,8 @@ const Index = () => {
           filters={filters} 
           onFilterChange={setFilters} 
           statusOptions={statusOptions}
+          sectorOptions={sectorOptions}
+          subacaoOptions={subacaoOptions}
         />
         
         <div className="mb-4 flex items-center justify-between">
