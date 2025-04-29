@@ -1,7 +1,5 @@
 import { Contract, ContractFilters } from "../types/Contract";
-
-// Using HTTP as requested by the user
-const API_URL = "http://200.19.215.246:3000/public/question/fe7ca3d2-cb3c-441f-a181-265205566b99.json";
+import { supabase } from "@/integrations/supabase/client";
 
 // Mock data to use when API is unavailable
 const mockContracts: Contract[] = [
@@ -89,56 +87,44 @@ const mockContracts: Contract[] = [
 
 export async function fetchContracts(): Promise<Contract[]> {
   try {
-    console.log("Fetching contracts from API...");
+    console.log("Fetching contracts from Supabase...");
     
-    // Add a timeout to the fetch request
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    const { data, error } = await supabase
+      .from('contratos')
+      .select('*');
     
-    const response = await fetch(API_URL, { 
-      signal: controller.signal,
-      // No CORS restrictions as the URL is considered safe
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-    
-    clearTimeout(timeoutId);
-    
-    if (!response.ok) {
-      console.log(`API request failed with status ${response.status}`);
+    if (error) {
+      console.error("Error fetching from Supabase:", error.message);
       return mockContracts;
     }
     
-    const data = await response.json();
-    
-    if (!data.data || !Array.isArray(data.data.rows)) {
-      console.log("Invalid API response format");
+    if (!data || data.length === 0) {
+      console.log("No contracts found in Supabase");
       return mockContracts;
     }
     
-    console.log(`Successfully fetched ${data.data.rows.length} contracts`);
+    console.log(`Successfully fetched ${data.length} contracts from Supabase`);
     
-    // Map the rows to our Contract interface
-    return data.data.rows.map((row: any, index: number) => ({
-      id: `${index}-${row[0] || ""}`,
-      num_contrato: row[0] || "",
-      dsc_resumo: row[1] || "",
-      nom_credor: row[2] || "",
-      num_cnpj_cpf: row[3] || "",
-      dat_inicio: row[4] || "",
-      dat_fim: row[5] || "",
-      val_global: parseFloat(row[6]) || 0,
-      dias_restantes: parseInt(row[7]) || 0,
-      status_vigencia: row[8] || "",
-      observacoes: row[9] || "",
-      object_contrato: row[10] || "",
-      contato_gestor: row[11] || "",
-      dat_publicacao: row[12] || ""
+    // Map the data to our Contract interface
+    return data.map((row: any) => ({
+      id: row.num_contrato || "",
+      num_contrato: row.num_contrato || "",
+      dsc_resumo: row.dsc_resumo_contrato || "",
+      nom_credor: row.nom_credor || "",
+      num_cnpj_cpf: row.num_documento_credor || "",
+      dat_inicio: row.dat_inicio_vigencia || "",
+      dat_fim: row.dat_fim_vigencia || "",
+      val_global: parseFloat(row.val_contrato) || 0,
+      dias_restantes: parseInt(row.dias_restantes) || 0,
+      status_vigencia: row.status_vigencia ? "VIGENTE" : "ENCERRADO",
+      observacoes: "",
+      object_contrato: row.dsc_objeto_contrato || "",
+      contato_gestor: "",
+      dat_publicacao: row.dat_assinatura || ""
     }));
   } catch (error) {
     console.error("Failed to fetch contracts:", error);
-    // Always return mock data when API fails
+    // Return mock data when Supabase fails
     return mockContracts;
   }
 }

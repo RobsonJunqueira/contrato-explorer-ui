@@ -20,7 +20,7 @@ export function useContracts() {
     retryDelay: 1000,
     meta: {
       errorHandler: (error: any) => {
-        console.error("Error fetching contracts:", error);
+        console.error("Error fetching contracts from Supabase:", error);
         toast({
           title: "Erro ao carregar contratos",
           description: "Usando dados de exemplo para visualização",
