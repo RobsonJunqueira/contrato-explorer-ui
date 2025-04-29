@@ -81,7 +81,7 @@ export function FilterBar({ filters, onFilterChange, statusOptions, sectorOption
             Setor Responsável
           </label>
           <Select
-            value={filters.class1_setor || ""}
+            value={filters.class1_setor || "_all_"}
             onValueChange={value => handleFilterChange("class1_setor", value)}
           >
             <SelectTrigger className="w-full">
@@ -89,12 +89,10 @@ export function FilterBar({ filters, onFilterChange, statusOptions, sectorOption
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="_all_">Todos</SelectItem>
-              {sectorOptions.map(sector => (
-                sector ? (
-                  <SelectItem key={sector} value={sector}>
-                    {sector}
-                  </SelectItem>
-                ) : null
+              {sectorOptions.filter(Boolean).map(sector => (
+                <SelectItem key={sector} value={sector}>
+                  {sector}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -105,7 +103,7 @@ export function FilterBar({ filters, onFilterChange, statusOptions, sectorOption
             Subação
           </label>
           <Select
-            value={filters.nmSubacao || ""}
+            value={filters.nmSubacao || "_all_"}
             onValueChange={value => handleFilterChange("nmSubacao", value)}
           >
             <SelectTrigger className="w-full">
@@ -113,12 +111,10 @@ export function FilterBar({ filters, onFilterChange, statusOptions, sectorOption
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="_all_">Todas</SelectItem>
-              {subacaoOptions.map(subacao => (
-                subacao ? (
-                  <SelectItem key={subacao} value={subacao}>
-                    {subacao}
-                  </SelectItem>
-                ) : null
+              {subacaoOptions.filter(Boolean).map(subacao => (
+                <SelectItem key={subacao} value={subacao}>
+                  {subacao}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -143,3 +139,4 @@ export function FilterBar({ filters, onFilterChange, statusOptions, sectorOption
     </div>
   );
 }
+
