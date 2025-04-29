@@ -33,7 +33,12 @@ export function useContracts() {
     }
   });
 
-  const filteredContracts = filterContracts(allContracts, filters);
+  // Apply filters, removing special values like "_all_" which just mean "no filter"
+  const filteredContracts = filterContracts(allContracts, {
+    ...filters,
+    class1_setor: filters.class1_setor === "_all_" ? "" : filters.class1_setor,
+    nmSubacao: filters.nmSubacao === "_all_" ? "" : filters.nmSubacao
+  });
 
   // Get unique status values for filter dropdown
   const statusOptions = Array.from(new Set(allContracts.map(c => c.status_vigencia)))

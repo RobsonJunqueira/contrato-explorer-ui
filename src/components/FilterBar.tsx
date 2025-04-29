@@ -88,11 +88,13 @@ export function FilterBar({ filters, onFilterChange, statusOptions, sectorOption
               <SelectValue placeholder="Selecione um setor" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Todos</SelectItem>
+              <SelectItem value="_all_">Todos</SelectItem>
               {sectorOptions.map(sector => (
-                <SelectItem key={sector} value={sector}>
-                  {sector}
-                </SelectItem>
+                sector ? (
+                  <SelectItem key={sector} value={sector}>
+                    {sector}
+                  </SelectItem>
+                ) : null
               ))}
             </SelectContent>
           </Select>
@@ -110,11 +112,13 @@ export function FilterBar({ filters, onFilterChange, statusOptions, sectorOption
               <SelectValue placeholder="Selecione uma subação" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Todas</SelectItem>
+              <SelectItem value="_all_">Todas</SelectItem>
               {subacaoOptions.map(subacao => (
-                <SelectItem key={subacao} value={subacao}>
-                  {subacao}
-                </SelectItem>
+                subacao ? (
+                  <SelectItem key={subacao} value={subacao}>
+                    {subacao}
+                  </SelectItem>
+                ) : null
               ))}
             </SelectContent>
           </Select>
