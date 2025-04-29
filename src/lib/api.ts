@@ -1,3 +1,4 @@
+
 import { Contract, ContractFilters } from "../types/Contract";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -203,9 +204,17 @@ export async function updateContract(id: string, updates: Partial<Contract>): Pr
   try {
     console.log("Updating contract in Supabase:", id, updates);
     
+    // Create a copy of updates to modify for database compatibility
+    const dbUpdates: any = { ...updates };
+    
+    // Convert status_vigencia from string to boolean if present
+    if (updates.status_vigencia !== undefined) {
+      dbUpdates.status_vigencia = updates.status_vigencia === "VIGENTE";
+    }
+    
     const { error } = await supabase
       .from('contratos')
-      .update(updates)
+      .update(dbUpdates)
       .eq('num_contrato', id);
     
     if (error) {
