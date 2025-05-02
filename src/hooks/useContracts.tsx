@@ -88,6 +88,9 @@ export function useContracts() {
     classif2: filters.classif2 === "_all_" ? "" : filters.classif2
   });
   
+  // Store the filtered count to display in UI
+  const filteredCount = filteredContracts.length;
+  
   // Apply sorting
   const sortedContracts = [...filteredContracts].sort((a, b) => {
     const aValue = a[sortField];
@@ -170,6 +173,7 @@ export function useContracts() {
   return {
     contracts: paginatedContracts,
     allContracts,
+    filteredCount,
     isLoading,
     error,
     filters,

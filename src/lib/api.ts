@@ -175,7 +175,7 @@ export function filterContracts(contracts: Contract[], filters: ContractFilters)
       return false;
     }
     
-    // Filter by status_vigencia (now works with switch button)
+    // Filter by status_vigencia (now works with empty string to show all)
     if (filters.status_vigencia && contract.status_vigencia !== filters.status_vigencia) {
       return false;
     }
@@ -196,6 +196,16 @@ export function filterContracts(contracts: Contract[], filters: ContractFilters)
       return false;
     }
     
+    // Filter by classif1
+    if (filters.classif1 && contract.classif1 !== filters.classif1) {
+      return false;
+    }
+    
+    // Filter by classif2
+    if (filters.classif2 && contract.classif2 !== filters.classif2) {
+      return false;
+    }
+    
     return true;
   });
 }
@@ -211,6 +221,12 @@ export async function updateContract(id: string, updates: Partial<Contract>): Pr
     if (updates.status_vigencia !== undefined) {
       dbUpdates.status_vigencia = updates.status_vigencia === "VIGENTE";
     }
+    
+    // Make sure these fields can be updated properly
+    // No conversions needed for string fields, they can be saved directly:
+    // - link_processo
+    // - link_processo_providencia
+    // - processo_providencia
     
     const { error } = await supabase
       .from('contratos')

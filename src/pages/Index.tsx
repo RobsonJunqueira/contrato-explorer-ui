@@ -9,6 +9,7 @@ import { Contract } from "@/types/Contract";
 const Index = () => {
   const { 
     contracts, 
+    filteredCount,
     isLoading, 
     error, 
     filters, 
@@ -76,7 +77,7 @@ const Index = () => {
           <h2 className="text-xl font-semibold text-navy-900">
             Lista de Contratos 
             <span className="ml-2 text-sm font-normal text-gray-500">
-              {contracts.length} contratos exibidos
+              {filteredCount} contratos encontrados
             </span>
           </h2>
         </div>

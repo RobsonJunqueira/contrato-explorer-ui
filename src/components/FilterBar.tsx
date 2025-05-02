@@ -5,7 +5,6 @@ import { ContractFilters } from "@/types/Contract";
 import { Search } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { useEffect } from "react";
 
 interface FilterBarProps {
   filters: ContractFilters;
@@ -36,7 +35,9 @@ export function FilterBar({
   };
 
   const handleSwitchChange = (checked: boolean) => {
-    onFilterChange({ ...filters, status_vigencia: checked ? "VIGENTE" : "ENCERRADO" });
+    // When switch is on, show only active contracts (VIGENTE)
+    // When switch is off, show all contracts (empty status filter)
+    onFilterChange({ ...filters, status_vigencia: checked ? "VIGENTE" : "" });
   };
 
   return (
@@ -81,13 +82,13 @@ export function FilterBar({
               Status de Vigência
             </Label>
             <div className="flex items-center space-x-2">
-              <span className="text-xs text-gray-500">ENCERRADO</span>
+              <span className="text-xs text-gray-500">TODOS</span>
               <Switch 
                 id="status_vigencia" 
                 checked={filters.status_vigencia === "VIGENTE"}
                 onCheckedChange={handleSwitchChange}
               />
-              <span className="text-xs text-gray-500">VIGENTE</span>
+              <span className="text-xs text-gray-500">VIGENTES</span>
             </div>
           </div>
         </div>
