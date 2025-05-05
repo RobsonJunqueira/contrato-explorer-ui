@@ -1,102 +1,75 @@
 
-import { FilterBar } from "@/components/FilterBar";
+import { useState, useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { ContractTable } from "@/components/ContractTable";
+import { FilterBar } from "@/components/FilterBar";
 import { useContracts } from "@/hooks/useContracts";
-import { useToast } from "@/components/ui/use-toast";
-import { useEffect } from "react";
-import { Contract } from "@/types/Contract";
+import { ContractFilters } from "@/types/Contract";
+import { filterContracts } from "@/lib/api";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/context/AuthContext";
+import { LogIn, LogOut } from "lucide-react";
 
-const Index = () => {
-  const { 
-    contracts, 
-    filteredCount,
-    isLoading, 
-    error, 
-    filters, 
-    setFilters, 
-    statusOptions,
-    sectorOptions,
-    subacaoOptions,
-    classif1Options,
-    classif2Options,
-    documentTypeOptions,
-    // Pagination
-    currentPage,
-    setCurrentPage,
-    totalPages,
-    // Sorting
-    sortField,
-    setSortField,
-    sortDirection,
-    setSortDirection
-  } = useContracts();
-  
-  const { toast } = useToast();
+export default function Index() {
+  const { allContracts, isLoading, error } = useContracts();
+  const [filters, setFilters] = useState<ContractFilters>({});
+  const [filteredContracts, setFilteredContracts] = useState(allContracts);
+  const { isAuthenticated, logout } = useAuth();
 
   useEffect(() => {
-    if (error) {
-      toast({
-        title: "Erro ao carregar contratos",
-        description: "Não foi possível carregar a lista de contratos. Por favor, tente novamente.",
-        variant: "destructive",
-      });
+    if (allContracts) {
+      setFilteredContracts(filterContracts(allContracts, filters));
     }
-  }, [error, toast]);
-  
-  const handleSortChange = (field: keyof Contract) => {
-    if (sortField === field) {
-      // Toggle sort direction if clicking the same field
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
-    } else {
-      // Default to ascending for a new field
-      setSortField(field);
-      setSortDirection("asc");
-    }
+  }, [allContracts, filters]);
+
+  const handleFilterChange = (newFilters: ContractFilters) => {
+    setFilters(newFilters);
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-navy-900 text-white py-6">
+    <div className="bg-gray-50 min-h-screen">
+      {/* Header */}
+      <header className="bg-navy-900 text-white py-8">
         <div className="container mx-auto px-4">
-          <h1 className="text-2xl md:text-3xl font-bold">Explorador de Contratos</h1>
-          <p className="text-navy-100 mt-2">Visualize e gerencie informações sobre contratos</p>
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold mb-2">Gerenciador de Contratos</h1>
+              <p className="text-navy-100">Visualize e gerencie todos os contratos ativos e encerrados</p>
+            </div>
+            {isAuthenticated ? (
+              <Button variant="outline" className="text-white border-white hover:bg-navy-800" onClick={logout}>
+                <LogOut className="mr-2 h-4 w-4" />
+                Sair
+              </Button>
+            ) : (
+              <Button variant="outline" className="text-white border-white hover:bg-navy-800" asChild>
+                <Link to="/login">
+                  <LogIn className="mr-2 h-4 w-4" />
+                  Login
+                </Link>
+              </Button>
+            )}
+          </div>
         </div>
       </header>
 
+      {/* Main content */}
       <main className="container mx-auto px-4 py-8">
-        <FilterBar 
-          filters={filters} 
-          onFilterChange={setFilters} 
-          statusOptions={statusOptions}
-          sectorOptions={sectorOptions}
-          subacaoOptions={subacaoOptions}
-          classif1Options={classif1Options}
-          classif2Options={classif2Options}
-          documentTypeOptions={documentTypeOptions}
-        />
-        
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-navy-900">
-            Lista de Contratos 
-            <span className="ml-2 text-sm font-normal text-gray-500">
-              {filteredCount} contratos encontrados
-            </span>
-          </h2>
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+          <FilterBar 
+            filters={filters} 
+            onFilterChange={handleFilterChange} 
+            contractsCount={filteredContracts.length}
+            totalCount={allContracts.length}
+          />
         </div>
-        
+
         <ContractTable 
-          contracts={contracts} 
+          contracts={filteredContracts}
           isLoading={isLoading}
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={setCurrentPage}
-          sortField={sortField}
-          sortDirection={sortDirection}
-          onSortChange={handleSortChange}
+          error={error}
         />
       </main>
     </div>
   );
-};
-
-export default Index;
+}
