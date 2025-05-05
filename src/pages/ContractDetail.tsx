@@ -1,7 +1,7 @@
 
-import { ContractDetailView } from "@/components/ContractDetailView";
+import { ContractDetailView } from "@/components/contract/ContractDetailView";
 import { useContracts } from "@/hooks/useContracts";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 

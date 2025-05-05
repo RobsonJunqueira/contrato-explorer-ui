@@ -1,18 +1,26 @@
-import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Contract } from "@/types/Contract";
+import React from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight } from "lucide-react";
-import { 
-  Pagination, 
-  PaginationContent, 
-  PaginationEllipsis, 
-  PaginationItem, 
-  PaginationLink, 
-  PaginationNext, 
-  PaginationPrevious 
+import { Contract } from "@/types/Contract";
+import { formatCurrency } from "@/lib/formatters";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
 } from "@/components/ui/pagination";
-import { FileText } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Eye } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface ContractTableProps {
   contracts: Contract[];
@@ -25,212 +33,186 @@ interface ContractTableProps {
   onSortChange: (field: keyof Contract) => void;
 }
 
-export function ContractTable({ 
-  contracts, 
-  isLoading, 
-  currentPage, 
-  totalPages, 
+export const ContractTable = ({
+  contracts,
+  isLoading,
+  currentPage,
+  totalPages,
   onPageChange,
   sortField,
   sortDirection,
   onSortChange
-}: ContractTableProps) {
+}: ContractTableProps) => {
   const navigate = useNavigate();
-
-  const handleViewDetails = (contract: Contract) => {
-    navigate(`/contrato/${contract.id}`);
-  };
   
+  // Function to determine the sort icon based on current sort state
   const getSortIcon = (field: keyof Contract) => {
     if (sortField !== field) return null;
-    return sortDirection === "asc" ? <ArrowUp className="h-4 w-4 ml-1" /> : <ArrowDown className="h-4 w-4 ml-1" />;
-  };
-  
-  const renderPagination = () => {
-    const pages = [];
-    const maxPageButtons = 5;
-    
-    // Always show first page
-    pages.push(1);
-    
-    // Calculate range of pages to show
-    let startPage = Math.max(2, currentPage - Math.floor(maxPageButtons / 2));
-    let endPage = Math.min(totalPages - 1, startPage + maxPageButtons - 3);
-    
-    // Adjust if we're near the end
-    if (endPage - startPage < maxPageButtons - 3 && startPage > 2) {
-      startPage = Math.max(2, totalPages - maxPageButtons + 2);
-    }
-    
-    // Add ellipsis after first page if needed
-    if (startPage > 2) {
-      pages.push("ellipsis1");
-    }
-    
-    // Add page numbers
-    for (let i = startPage; i <= endPage; i++) {
-      pages.push(i);
-    }
-    
-    // Add ellipsis before last page if needed
-    if (endPage < totalPages - 1) {
-      pages.push("ellipsis2");
-    }
-    
-    // Always show last page if there is more than one page
-    if (totalPages > 1) {
-      pages.push(totalPages);
-    }
-    
-    return pages.map((page, index) => {
-      if (page === "ellipsis1" || page === "ellipsis2") {
-        return (
-          <PaginationItem key={`ellipsis-${index}`}>
-            <PaginationEllipsis />
-          </PaginationItem>
-        );
-      }
-      
-      return (
-        <PaginationItem key={`page-${page}`}>
-          <PaginationLink 
-            isActive={currentPage === page} 
-            onClick={() => onPageChange(page as number)}
-          >
-            {page}
-          </PaginationLink>
-        </PaginationItem>
-      );
-    });
+    return sortDirection === "asc" ? "↑" : "↓";
   };
 
-  if (isLoading) {
+  // Create a sortable header
+  const renderSortableHeader = (field: keyof Contract, label: string) => {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-navy-700"></div>
+      <div 
+        className="flex items-center cursor-pointer hover:text-navy-800"
+        onClick={() => onSortChange(field)}
+      >
+        {label} 
+        <span className="ml-1">{getSortIcon(field)}</span>
       </div>
     );
-  }
+  };
 
-  if (contracts.length === 0) {
+  // Handle loading state
+  if (isLoading) {
     return (
-      <div className="bg-white rounded-md shadow p-8 text-center">
-        <h3 className="text-lg font-medium text-gray-500">Nenhum contrato encontrado</h3>
-        <p className="text-gray-400">Tente ajustar os filtros para encontrar o que procura</p>
+      <div className="w-full my-8 flex justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-navy-700"></div>
       </div>
     );
   }
 
   return (
     <div className="space-y-4">
-      <div className="bg-white rounded-md shadow overflow-hidden">
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader className="bg-navy-50">
-              <TableRow>
-                <TableHead 
-                  className="font-semibold cursor-pointer"
-                  onClick={() => onSortChange("num_contrato")}
-                >
-                  <div className="flex items-center">
-                    Número
-                    {getSortIcon("num_contrato")}
-                  </div>
-                </TableHead>
-                <TableHead 
-                  className="font-semibold cursor-pointer"
-                  onClick={() => onSortChange("dsc_resumo")}
-                >
-                  <div className="flex items-center">
-                    Resumo
-                    {getSortIcon("dsc_resumo")}
-                  </div>
-                </TableHead>
-                <TableHead 
-                  className="font-semibold text-center cursor-pointer"
-                  onClick={() => onSortChange("dias_restantes")}
-                >
-                  <div className="flex items-center justify-center">
-                    Dias Restantes
-                    {getSortIcon("dias_restantes")}
-                  </div>
-                </TableHead>
-                <TableHead 
-                  className="font-semibold text-center cursor-pointer"
-                  onClick={() => onSortChange("status_vigencia")}
-                >
-                  <div className="flex items-center justify-center">
-                    Status
-                    {getSortIcon("status_vigencia")}
-                  </div>
-                </TableHead>
-                <TableHead className="font-semibold text-right">Ações</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {contracts.map((contract) => (
-                <TableRow key={contract.id} className="hover:bg-navy-50/50">
-                  <TableCell className="font-medium">{contract.num_contrato}</TableCell>
-                  <TableCell className="max-w-md truncate">{contract.dsc_resumo}</TableCell>
-                  <TableCell className="text-center">
-                    <span 
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        contract.dias_restantes < 30 
-                          ? 'bg-red-100 text-red-800' 
-                          : contract.dias_restantes < 90 
-                            ? 'bg-yellow-100 text-yellow-800'
-                            : 'bg-green-100 text-green-800'
-                      }`}
+      <div className="border rounded-lg overflow-hidden">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="font-medium">
+                {renderSortableHeader("num_contrato", "Número")}
+              </TableHead>
+              <TableHead className="font-medium">
+                {renderSortableHeader("nom_credor", "Credor")}
+              </TableHead>
+              <TableHead className="font-medium hidden md:table-cell">
+                {renderSortableHeader("dat_fim", "Data Fim")}
+              </TableHead>
+              <TableHead className="font-medium hidden md:table-cell">
+                {renderSortableHeader("dias_restantes", "Dias Restantes")}
+              </TableHead>
+              <TableHead className="font-medium hidden lg:table-cell">
+                {renderSortableHeader("val_global", "Valor Global")}
+              </TableHead>
+              <TableHead className="font-medium text-right">
+                Ações
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {contracts.length > 0 ? (
+              contracts.map((contract) => (
+                <TableRow key={contract.id}>
+                  <TableCell>
+                    <div className="flex flex-col">
+                      <span className="text-navy-900 font-medium">{contract.num_contrato}</span>
+                      <span className="text-xs text-gray-500">{contract.dsc_tipo_documento_legal}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex flex-col">
+                      <span className="text-navy-900 font-medium truncate max-w-[200px]">
+                        {contract.nom_credor}
+                      </span>
+                      <span className="text-xs text-gray-500">{contract.num_cnpj_cpf}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="hidden md:table-cell">
+                    {contract.dat_fim || "-"}
+                  </TableCell>
+                  <TableCell className="hidden md:table-cell">
+                    <Badge 
+                      variant={
+                        contract.dias_restantes < 30 ? "destructive" : 
+                        contract.dias_restantes < 90 ? "warning" : 
+                        "success"
+                      }
                     >
                       {contract.dias_restantes}
-                    </span>
+                    </Badge>
                   </TableCell>
-                  <TableCell className="text-center">
-                    <span 
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        contract.status_vigencia === 'VIGENTE' 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-gray-100 text-gray-800'
-                      }`}
-                    >
-                      {contract.status_vigencia}
-                    </span>
+                  <TableCell className="hidden lg:table-cell">
+                    {formatCurrency(contract.val_global)}
                   </TableCell>
                   <TableCell className="text-right">
                     <Button
-                      size="sm"
                       variant="ghost"
-                      asChild
-                      className="h-8 w-8"
-                      title="Ver detalhes"
+                      size="sm"
+                      className="text-navy-700 hover:text-navy-900 hover:bg-navy-50 p-2 h-8 w-8"
+                      onClick={() => navigate(`/contract/${contract.id}`)}
                     >
-                      <Link to={`/contrato/${contract.id || contract.num_contrato}`}>
-                        <FileText className="h-4 w-4" />
-                      </Link>
+                      <Eye className="h-4 w-4" />
+                      <span className="sr-only">Ver detalhes</span>
                     </Button>
                   </TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                  Nenhum contrato encontrado com os filtros selecionados.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
       </div>
-    
+      
       {totalPages > 1 && (
-        <Pagination className="mt-4">
+        <Pagination className="justify-center">
           <PaginationContent>
             <PaginationItem>
-              <PaginationPrevious
-                onClick={() => onPageChange(Math.max(1, currentPage - 1))}
+              <PaginationPrevious 
+                href="#" 
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (currentPage > 1) onPageChange(currentPage - 1);
+                }}
                 className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
               />
             </PaginationItem>
             
-            {renderPagination()}
+            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+              // Show 5 pages max with current in the middle when possible
+              let pageToShow: number;
+              
+              if (totalPages <= 5) {
+                // If total pages is 5 or less, show all pages
+                pageToShow = i + 1;
+              } else if (currentPage <= 3) {
+                // If current page is close to start, show first 5 pages
+                pageToShow = i + 1;
+              } else if (currentPage >= totalPages - 2) {
+                // If current page is close to end, show last 5 pages
+                pageToShow = totalPages - 4 + i;
+              } else {
+                // Otherwise show 2 pages before and after current
+                pageToShow = currentPage - 2 + i;
+              }
+              
+              return (
+                <PaginationItem key={pageToShow}>
+                  <PaginationLink 
+                    href="#" 
+                    onClick={(e) => {
+                      e.preventDefault();
+                      onPageChange(pageToShow);
+                    }}
+                    isActive={pageToShow === currentPage}
+                  >
+                    {pageToShow}
+                  </PaginationLink>
+                </PaginationItem>
+              );
+            })}
             
             <PaginationItem>
               <PaginationNext
-                onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (currentPage < totalPages) onPageChange(currentPage + 1);
+                }}
                 className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
               />
             </PaginationItem>
@@ -239,4 +221,4 @@ export function ContractTable({
       )}
     </div>
   );
-}
+};
