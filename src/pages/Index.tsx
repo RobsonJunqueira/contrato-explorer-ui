@@ -19,6 +19,7 @@ const Index = () => {
     subacaoOptions,
     classif1Options,
     classif2Options,
+    documentTypeOptions,
     // Pagination
     currentPage,
     setCurrentPage,
@@ -71,6 +72,7 @@ const Index = () => {
           subacaoOptions={subacaoOptions}
           classif1Options={classif1Options}
           classif2Options={classif2Options}
+          documentTypeOptions={documentTypeOptions}
         />
         
         <div className="mb-4 flex items-center justify-between">

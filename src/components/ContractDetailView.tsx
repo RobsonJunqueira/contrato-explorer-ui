@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Contract } from "@/types/Contract";
 import { formatCurrency } from "@/lib/formatters";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, ExternalLink, Check, X, Edit, Plus } from "lucide-react";
+import { ArrowLeft, ExternalLink, Check, X, Edit, Plus, FileText } from "lucide-react";
 import { useContracts } from "@/hooks/useContracts";
 import { useToast } from "@/components/ui/use-toast";
 import { 
@@ -34,17 +34,40 @@ interface ContractDetailViewProps {
   isLoading: boolean;
 }
 
-type EditableField = "link_processo" | "link_processo_providencia" | "processo_providencia" | "class1_setor";
+type EditableField = 
+  | "link_processo" 
+  | "link_processo_providencia" 
+  | "processo_providencia" 
+  | "class1_setor"
+  | "class2_tipo"
+  | "classif1"
+  | "classif2";
 
 export function ContractDetailView({ contract, isLoading }: ContractDetailViewProps) {
   const navigate = useNavigate();
-  const { updateContractField, sectorOptions } = useContracts();
+  const { 
+    updateContractField, 
+    sectorOptions, 
+    typeOptions, 
+    classif1Options, 
+    classif2Options 
+  } = useContracts();
   const { toast } = useToast();
   
   const [editingField, setEditingField] = useState<EditableField | null>(null);
   const [fieldValue, setFieldValue] = useState<string>("");
+  
+  // Dialog state for adding new values
   const [isAddSectorDialogOpen, setIsAddSectorDialogOpen] = useState(false);
+  const [isAddTypeDialogOpen, setIsAddTypeDialogOpen] = useState(false);
+  const [isAddClassif1DialogOpen, setIsAddClassif1DialogOpen] = useState(false);
+  const [isAddClassif2DialogOpen, setIsAddClassif2DialogOpen] = useState(false);
+  
+  // New values for each field
   const [newSector, setNewSector] = useState("");
+  const [newType, setNewType] = useState("");
+  const [newClassif1, setNewClassif1] = useState("");
+  const [newClassif2, setNewClassif2] = useState("");
 
   const handleEditClick = (field: EditableField, value: string | undefined) => {
     setEditingField(field);
@@ -76,31 +99,41 @@ export function ContractDetailView({ contract, isLoading }: ContractDetailViewPr
     setEditingField(null);
   };
 
-  const handleAddSector = async () => {
-    if (!contract || !newSector.trim()) return;
+  // Generic function for adding a new option
+  const handleAddNewOption = async (field: EditableField, value: string, setDialogState: (state: boolean) => void) => {
+    if (!contract || !value.trim()) return;
     
     try {
-      const success = await updateContractField(contract.id, { class1_setor: newSector.trim() });
+      const success = await updateContractField(contract.id, { [field]: value.trim() });
       if (success) {
         // Update the local contract data to reflect changes immediately
-        contract.class1_setor = newSector.trim();
+        contract[field] = value.trim();
         toast({
-          title: "Setor adicionado",
-          description: "O novo setor foi adicionado com sucesso.",
+          title: "Valor adicionado",
+          description: "O novo valor foi adicionado com sucesso.",
         });
       }
     } catch (error) {
-      console.error("Error adding sector:", error);
+      console.error(`Error adding ${field}:`, error);
       toast({
-        title: "Erro ao adicionar setor",
-        description: "Não foi possível adicionar o novo setor.",
+        title: `Erro ao adicionar ${field}`,
+        description: "Não foi possível adicionar o novo valor.",
         variant: "destructive",
       });
     }
     
-    setNewSector("");
-    setIsAddSectorDialogOpen(false);
+    // Reset state
+    setDialogState(false);
+    if (field === "class1_setor") setNewSector("");
+    if (field === "class2_tipo") setNewType("");
+    if (field === "classif1") setNewClassif1("");
+    if (field === "classif2") setNewClassif2("");
   };
+
+  const handleAddSector = () => handleAddNewOption("class1_setor", newSector, setIsAddSectorDialogOpen);
+  const handleAddType = () => handleAddNewOption("class2_tipo", newType, setIsAddTypeDialogOpen);
+  const handleAddClassif1 = () => handleAddNewOption("classif1", newClassif1, setIsAddClassif1DialogOpen);
+  const handleAddClassif2 = () => handleAddNewOption("classif2", newClassif2, setIsAddClassif2DialogOpen);
 
   if (isLoading) {
     return (
@@ -129,7 +162,7 @@ export function ContractDetailView({ contract, isLoading }: ContractDetailViewPr
   const transparencyPortalURL = `https://www.transparencia.sc.gov.br/contratos/extratosigef?nucontratofiltro%5B%5D=${contract.num_contrato}&unidadegestorafiltro%5B%5D=${contract.cod_unidade_gestora || ""}&gestaofiltro%5B%5D=1`;
 
   const renderEditableField = (
-    field: EditableField,
+    field: "link_processo" | "link_processo_providencia" | "processo_providencia",
     value: string | undefined,
     label: string,
     isTextarea: boolean = false
@@ -202,13 +235,19 @@ export function ContractDetailView({ contract, isLoading }: ContractDetailViewPr
     );
   };
   
-  const renderEditableSector = () => {
-    const isEditing = editingField === "class1_setor";
+  const renderEditableSelectField = (
+    field: "class1_setor" | "class2_tipo" | "classif1" | "classif2",
+    value: string | undefined,
+    label: string,
+    options: string[],
+    setDialogOpen: (open: boolean) => void
+  ) => {
+    const isEditing = editingField === field;
     
     if (isEditing) {
       return (
         <div>
-          <h3 className="text-sm font-semibold text-gray-500">Setor Responsável</h3>
+          <h3 className="text-sm font-semibold text-gray-500">{label}</h3>
           <div className="flex mt-1">
             <div className="flex-grow mr-2">
               <Select 
@@ -216,48 +255,26 @@ export function ContractDetailView({ contract, isLoading }: ContractDetailViewPr
                 onValueChange={setFieldValue}
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Selecione um setor" />
+                  <SelectValue placeholder={`Selecione ${label.toLowerCase()}`} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
-                    {sectorOptions && sectorOptions.map(sector => (
-                      <SelectItem key={sector} value={sector}>
-                        {sector}
+                    {options && options.map(option => (
+                      <SelectItem key={option} value={option}>
+                        {option}
                       </SelectItem>
                     ))}
-                    <Dialog open={isAddSectorDialogOpen} onOpenChange={setIsAddSectorDialogOpen}>
-                      <DialogTrigger asChild>
-                        <Button 
-                          variant="ghost" 
-                          className="w-full justify-start text-left font-normal border-t mt-1 pt-1 rounded-none"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <Plus className="mr-2 h-4 w-4" />
-                          Adicionar Setor
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>Adicionar novo setor</DialogTitle>
-                          <DialogDescription>
-                            Informe o nome do novo setor a ser adicionado.
-                          </DialogDescription>
-                        </DialogHeader>
-                        <Input 
-                          value={newSector}
-                          onChange={(e) => setNewSector(e.target.value)}
-                          placeholder="Nome do setor"
-                        />
-                        <DialogFooter>
-                          <Button variant="outline" onClick={() => setIsAddSectorDialogOpen(false)}>
-                            Cancelar
-                          </Button>
-                          <Button onClick={handleAddSector} disabled={!newSector.trim()}>
-                            Adicionar
-                          </Button>
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
+                    <Button 
+                      variant="ghost" 
+                      className="w-full justify-start text-left font-normal border-t mt-1 pt-1 rounded-none"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDialogOpen(true);
+                      }}
+                    >
+                      <Plus className="mr-2 h-4 w-4" />
+                      Adicionar {label}
+                    </Button>
                   </SelectGroup>
                 </SelectContent>
               </Select>
@@ -285,16 +302,16 @@ export function ContractDetailView({ contract, isLoading }: ContractDetailViewPr
     
     return (
       <div className="group relative">
-        <h3 className="text-sm font-semibold text-gray-500">Setor Responsável</h3>
+        <h3 className="text-sm font-semibold text-gray-500">{label}</h3>
         <div className="flex items-center">
           <div className="text-navy-900 font-medium flex-grow">
-            {contract.class1_setor || "-"}
+            {value || "-"}
           </div>
           <Button
             size="icon"
             variant="ghost"
             className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8"
-            onClick={() => handleEditClick("class1_setor", contract.class1_setor)}
+            onClick={() => handleEditClick(field, value)}
           >
             <Edit className="h-4 w-4" />
           </Button>
@@ -325,6 +342,103 @@ export function ContractDetailView({ contract, isLoading }: ContractDetailViewPr
           {contract.status_vigencia}
         </span>
       </div>
+
+      {/* Add new item dialogs */}
+      <Dialog open={isAddSectorDialogOpen} onOpenChange={setIsAddSectorDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Adicionar novo setor</DialogTitle>
+            <DialogDescription>
+              Informe o nome do novo setor a ser adicionado.
+            </DialogDescription>
+          </DialogHeader>
+          <Input 
+            value={newSector}
+            onChange={(e) => setNewSector(e.target.value)}
+            placeholder="Nome do setor"
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddSectorDialogOpen(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleAddSector} disabled={!newSector.trim()}>
+              Adicionar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isAddTypeDialogOpen} onOpenChange={setIsAddTypeDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Adicionar novo tipo</DialogTitle>
+            <DialogDescription>
+              Informe o nome do novo tipo a ser adicionado.
+            </DialogDescription>
+          </DialogHeader>
+          <Input 
+            value={newType}
+            onChange={(e) => setNewType(e.target.value)}
+            placeholder="Nome do tipo"
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddTypeDialogOpen(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleAddType} disabled={!newType.trim()}>
+              Adicionar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isAddClassif1DialogOpen} onOpenChange={setIsAddClassif1DialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Adicionar nova classificação nível 1</DialogTitle>
+            <DialogDescription>
+              Informe o nome da nova classificação a ser adicionada.
+            </DialogDescription>
+          </DialogHeader>
+          <Input 
+            value={newClassif1}
+            onChange={(e) => setNewClassif1(e.target.value)}
+            placeholder="Nome da classificação"
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddClassif1DialogOpen(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleAddClassif1} disabled={!newClassif1.trim()}>
+              Adicionar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isAddClassif2DialogOpen} onOpenChange={setIsAddClassif2DialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Adicionar nova classificação nível 2</DialogTitle>
+            <DialogDescription>
+              Informe o nome da nova classificação a ser adicionada.
+            </DialogDescription>
+          </DialogHeader>
+          <Input 
+            value={newClassif2}
+            onChange={(e) => setNewClassif2(e.target.value)}
+            placeholder="Nome da classificação"
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddClassif2DialogOpen(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleAddClassif2} disabled={!newClassif2.trim()}>
+              Adicionar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Card>
         <CardHeader className="bg-navy-50">
@@ -414,12 +528,21 @@ export function ContractDetailView({ contract, isLoading }: ContractDetailViewPr
                 <p className="text-navy-900 font-medium">{contract.cod_subacao || "-"}</p>
               </div>
               
-              {renderEditableSector()}
+              {renderEditableSelectField(
+                "class1_setor",
+                contract.class1_setor,
+                "Setor Responsável",
+                sectorOptions,
+                setIsAddSectorDialogOpen
+              )}
               
-              <div>
-                <h3 className="text-sm font-semibold text-gray-500">Tipo</h3>
-                <p className="text-navy-900 font-medium">{contract.class2_tipo || "-"}</p>
-              </div>
+              {renderEditableSelectField(
+                "class2_tipo",
+                contract.class2_tipo,
+                "Tipo",
+                typeOptions,
+                setIsAddTypeDialogOpen
+              )}
               
               <div>
                 <h3 className="text-sm font-semibold text-gray-500">Valor Original do Contrato</h3>
@@ -437,15 +560,21 @@ export function ContractDetailView({ contract, isLoading }: ContractDetailViewPr
                 <p className="text-navy-900 font-medium">{contract.codSubacao || "-"}</p>
               </div>
               
-              <div>
-                <h3 className="text-sm font-semibold text-gray-500">Classificação 1</h3>
-                <p className="text-navy-900 font-medium">{contract.classif1 || "-"}</p>
-              </div>
+              {renderEditableSelectField(
+                "classif1",
+                contract.classif1,
+                "Classificação 1",
+                classif1Options,
+                setIsAddClassif1DialogOpen
+              )}
               
-              <div>
-                <h3 className="text-sm font-semibold text-gray-500">Classificação 2</h3>
-                <p className="text-navy-900 font-medium">{contract.classif2 || "-"}</p>
-              </div>
+              {renderEditableSelectField(
+                "classif2",
+                contract.classif2,
+                "Classificação 2", 
+                classif2Options,
+                setIsAddClassif2DialogOpen
+              )}
               
               <div>
                 <h3 className="text-sm font-semibold text-gray-500">Programa</h3>

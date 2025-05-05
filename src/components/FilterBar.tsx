@@ -5,6 +5,16 @@ import { ContractFilters } from "@/types/Contract";
 import { Search } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { 
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { useState } from "react";
 
 interface FilterBarProps {
   filters: ContractFilters;
@@ -14,6 +24,7 @@ interface FilterBarProps {
   subacaoOptions: string[];
   classif1Options: string[];
   classif2Options: string[];
+  documentTypeOptions: string[];
 }
 
 export function FilterBar({ 
@@ -23,8 +34,14 @@ export function FilterBar({
   sectorOptions, 
   subacaoOptions,
   classif1Options,
-  classif2Options 
+  classif2Options,
+  documentTypeOptions 
 }: FilterBarProps) {
+  // Track selected document types
+  const [selectedDocTypes, setSelectedDocTypes] = useState<string[]>(
+    filters.dsc_tipo_documento_legal ? filters.dsc_tipo_documento_legal.split(',') : []
+  );
+
   const handleFilterChange = (key: keyof ContractFilters, value: string) => {
     // If classif1 changes, reset classif2
     if (key === "classif1") {
@@ -38,6 +55,19 @@ export function FilterBar({
     // When switch is on, show only active contracts (VIGENTE)
     // When switch is off, show all contracts (empty status filter)
     onFilterChange({ ...filters, status_vigencia: checked ? "VIGENTE" : "" });
+  };
+
+  // Handle document type filter changes
+  const handleDocTypeChange = (type: string, checked: boolean) => {
+    const newSelected = checked 
+      ? [...selectedDocTypes, type] 
+      : selectedDocTypes.filter(t => t !== type);
+    
+    setSelectedDocTypes(newSelected);
+    onFilterChange({ 
+      ...filters, 
+      dsc_tipo_documento_legal: newSelected.length > 0 ? newSelected.join(',') : '' 
+    });
   };
 
   return (
@@ -91,6 +121,36 @@ export function FilterBar({
               <span className="text-xs text-gray-500">VIGENTES</span>
             </div>
           </div>
+        </div>
+        
+        {/* Document Type Filter */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-700">
+            Tipo de Documento Legal
+          </label>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="w-full justify-between">
+                {selectedDocTypes.length > 0 
+                  ? `${selectedDocTypes.length} selecionado${selectedDocTypes.length > 1 ? 's' : ''}` 
+                  : 'Selecionar tipos'}
+                <span className="ml-2 h-4 w-4 shrink-0 opacity-50">▼</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56">
+              <DropdownMenuLabel>Tipos de Documento</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {documentTypeOptions.map(type => (
+                <DropdownMenuCheckboxItem
+                  key={type}
+                  checked={selectedDocTypes.includes(type)}
+                  onCheckedChange={(checked) => handleDocTypeChange(type, checked)}
+                >
+                  {type}
+                </DropdownMenuCheckboxItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
         
         <div className="space-y-2">

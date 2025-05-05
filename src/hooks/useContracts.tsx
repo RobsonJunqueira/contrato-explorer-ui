@@ -28,7 +28,8 @@ export function useContracts() {
       nmSubacao: "_all_",
       dsc_objeto_contrato: "",
       classif1: "_all_",
-      classif2: "_all_"
+      classif2: "_all_",
+      dsc_tipo_documento_legal: ""
     })
   );
   
@@ -148,6 +149,18 @@ export function useContracts() {
   ))
     .filter(Boolean)
     .sort();
+    
+  // Get unique type values for filter dropdown
+  const typeOptions = Array.from(new Set(allContracts.map(c => c.class2_tipo)))
+    .filter(Boolean)
+    .sort();
+    
+  // Get unique document type values for filter dropdown
+  const documentTypeOptions = Array.from(new Set(
+    allContracts.map(c => c.dsc_tipo_documento_legal || c.cod_tipo_documento_legal)
+  ))
+    .filter(Boolean)
+    .sort();
 
   // Add contract update function
   const updateContractField = async (id: string, updates: Partial<Contract>) => {
@@ -183,6 +196,8 @@ export function useContracts() {
     subacaoOptions,
     classif1Options,
     classif2Options,
+    typeOptions,
+    documentTypeOptions,
     // Pagination
     currentPage,
     setCurrentPage,

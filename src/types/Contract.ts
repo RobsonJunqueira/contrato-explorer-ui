@@ -1,4 +1,3 @@
-
 export interface Contract {
   id: string;
   num_contrato: string;
@@ -59,12 +58,13 @@ export interface Contract {
 }
 
 export interface ContractFilters {
-  num_contrato?: string;
-  nom_credor?: string;
-  status_vigencia?: string;
-  class1_setor?: string; 
-  nmSubacao?: string;
-  dsc_objeto_contrato?: string;
-  classif1?: string;
-  classif2?: string; 
+  num_contrato: string;
+  nom_credor: string;
+  status_vigencia: string;
+  class1_setor: string;
+  nmSubacao: string;
+  dsc_objeto_contrato: string;
+  classif1: string;
+  classif2: string;
+  dsc_tipo_documento_legal?: string;
 }

@@ -1,4 +1,3 @@
-
 import { Contract, ContractFilters } from "../types/Contract";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -163,36 +162,30 @@ export async function fetchContracts(): Promise<Contract[]> {
   }
 }
 
-export function filterContracts(contracts: Contract[], filters: ContractFilters): Contract[] {
+export const filterContracts = (contracts: Contract[], filters: ContractFilters): Contract[] => {
   return contracts.filter(contract => {
-    // Filter by num_contrato
-    if (filters.num_contrato && !contract.num_contrato.toLowerCase().includes(filters.num_contrato.toLowerCase())) {
+    // Filter by contract number
+    if (filters.num_contrato && !contract.num_contrato?.toString().toLowerCase().includes(filters.num_contrato.toLowerCase())) {
       return false;
     }
     
-    // Filter by nom_credor
-    if (filters.nom_credor && !contract.nom_credor.toLowerCase().includes(filters.nom_credor.toLowerCase())) {
+    // Filter by contractor name
+    if (filters.nom_credor && !contract.nom_credor?.toLowerCase().includes(filters.nom_credor.toLowerCase())) {
       return false;
     }
     
-    // Filter by status_vigencia (now works with empty string to show all)
+    // Filter by contract status
     if (filters.status_vigencia && contract.status_vigencia !== filters.status_vigencia) {
       return false;
     }
     
-    // Filter by class1_setor (Setor Responsável)
+    // Filter by sector
     if (filters.class1_setor && contract.class1_setor !== filters.class1_setor) {
       return false;
     }
     
-    // Filter by nmSubacao (Subação)
+    // Filter by subacao
     if (filters.nmSubacao && contract.nmSubacao !== filters.nmSubacao) {
-      return false;
-    }
-    
-    // Filter by dsc_objeto_contrato (Objeto)
-    if (filters.dsc_objeto_contrato && contract.dsc_objeto_contrato && 
-        !contract.dsc_objeto_contrato.toLowerCase().includes(filters.dsc_objeto_contrato.toLowerCase())) {
       return false;
     }
     
@@ -206,9 +199,24 @@ export function filterContracts(contracts: Contract[], filters: ContractFilters)
       return false;
     }
     
+    // Filter by contract description (object)
+    if (filters.dsc_objeto_contrato && 
+        !contract.dsc_objeto_contrato?.toLowerCase().includes(filters.dsc_objeto_contrato.toLowerCase())) {
+      return false;
+    }
+    
+    // Filter by document type (multi-select)
+    if (filters.dsc_tipo_documento_legal && filters.dsc_tipo_documento_legal.length > 0) {
+      const selectedTypes = filters.dsc_tipo_documento_legal.split(',');
+      const contractDocType = contract.dsc_tipo_documento_legal || contract.cod_tipo_documento_legal;
+      if (!contractDocType || !selectedTypes.includes(contractDocType)) {
+        return false;
+      }
+    }
+    
     return true;
   });
-}
+};
 
 export async function updateContract(id: string, updates: Partial<Contract>): Promise<boolean> {
   try {

@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Contract } from "@/types/Contract";
@@ -13,6 +12,7 @@ import {
   PaginationNext, 
   PaginationPrevious 
 } from "@/components/ui/pagination";
+import { FileText } from "lucide-react";
 
 interface ContractTableProps {
   contracts: Contract[];
@@ -198,12 +198,15 @@ export function ContractTable({
                   </TableCell>
                   <TableCell className="text-right">
                     <Button
-                      variant="outline"
                       size="sm"
-                      className="border-navy-700 text-navy-700 hover:bg-navy-50"
-                      onClick={() => handleViewDetails(contract)}
+                      variant="ghost"
+                      asChild
+                      className="h-8 w-8"
+                      title="Ver detalhes"
                     >
-                      Detalhes
+                      <Link to={`/contrato/${contract.id || contract.num_contrato}`}>
+                        <FileText className="h-4 w-4" />
+                      </Link>
                     </Button>
                   </TableCell>
                 </TableRow>
