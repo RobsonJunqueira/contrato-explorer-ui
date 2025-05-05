@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Contract } from "@/types/Contract";
@@ -139,7 +140,7 @@ export const ContractTable = ({
                       variant="ghost"
                       size="sm"
                       className="text-navy-700 hover:text-navy-900 hover:bg-navy-50 p-2 h-8 w-8"
-                      onClick={() => navigate(`/contract/${contract.id}`)}
+                      onClick={() => navigate(`/contrato/${contract.id}`)}
                     >
                       <Eye className="h-4 w-4" />
                       <span className="sr-only">Ver detalhes</span>
