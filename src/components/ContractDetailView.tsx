@@ -8,24 +8,43 @@ import { Textarea } from "@/components/ui/textarea";
 import { Contract } from "@/types/Contract";
 import { formatCurrency } from "@/lib/formatters";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, ExternalLink, Check, X, Edit } from "lucide-react";
+import { ArrowLeft, ExternalLink, Check, X, Edit, Plus } from "lucide-react";
 import { useContracts } from "@/hooks/useContracts";
 import { useToast } from "@/components/ui/use-toast";
+import { 
+  Select, 
+  SelectContent, 
+  SelectGroup, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
+import { 
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 interface ContractDetailViewProps {
   contract: Contract | undefined;
   isLoading: boolean;
 }
 
-type EditableField = "link_processo" | "link_processo_providencia" | "processo_providencia";
+type EditableField = "link_processo" | "link_processo_providencia" | "processo_providencia" | "class1_setor";
 
 export function ContractDetailView({ contract, isLoading }: ContractDetailViewProps) {
   const navigate = useNavigate();
-  const { updateContractField } = useContracts();
+  const { updateContractField, sectorOptions } = useContracts();
   const { toast } = useToast();
   
   const [editingField, setEditingField] = useState<EditableField | null>(null);
   const [fieldValue, setFieldValue] = useState<string>("");
+  const [isAddSectorDialogOpen, setIsAddSectorDialogOpen] = useState(false);
+  const [newSector, setNewSector] = useState("");
 
   const handleEditClick = (field: EditableField, value: string | undefined) => {
     setEditingField(field);
@@ -55,6 +74,32 @@ export function ContractDetailView({ contract, isLoading }: ContractDetailViewPr
 
   const handleCancelClick = () => {
     setEditingField(null);
+  };
+
+  const handleAddSector = async () => {
+    if (!contract || !newSector.trim()) return;
+    
+    try {
+      const success = await updateContractField(contract.id, { class1_setor: newSector.trim() });
+      if (success) {
+        // Update the local contract data to reflect changes immediately
+        contract.class1_setor = newSector.trim();
+        toast({
+          title: "Setor adicionado",
+          description: "O novo setor foi adicionado com sucesso.",
+        });
+      }
+    } catch (error) {
+      console.error("Error adding sector:", error);
+      toast({
+        title: "Erro ao adicionar setor",
+        description: "Não foi possível adicionar o novo setor.",
+        variant: "destructive",
+      });
+    }
+    
+    setNewSector("");
+    setIsAddSectorDialogOpen(false);
   };
 
   if (isLoading) {
@@ -149,6 +194,107 @@ export function ContractDetailView({ contract, isLoading }: ContractDetailViewPr
             variant="ghost"
             className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8"
             onClick={() => handleEditClick(field, value)}
+          >
+            <Edit className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+    );
+  };
+  
+  const renderEditableSector = () => {
+    const isEditing = editingField === "class1_setor";
+    
+    if (isEditing) {
+      return (
+        <div>
+          <h3 className="text-sm font-semibold text-gray-500">Setor Responsável</h3>
+          <div className="flex mt-1">
+            <div className="flex-grow mr-2">
+              <Select 
+                value={fieldValue} 
+                onValueChange={setFieldValue}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Selecione um setor" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    {sectorOptions && sectorOptions.map(sector => (
+                      <SelectItem key={sector} value={sector}>
+                        {sector}
+                      </SelectItem>
+                    ))}
+                    <Dialog open={isAddSectorDialogOpen} onOpenChange={setIsAddSectorDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          className="w-full justify-start text-left font-normal border-t mt-1 pt-1 rounded-none"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <Plus className="mr-2 h-4 w-4" />
+                          Adicionar Setor
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Adicionar novo setor</DialogTitle>
+                          <DialogDescription>
+                            Informe o nome do novo setor a ser adicionado.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <Input 
+                          value={newSector}
+                          onChange={(e) => setNewSector(e.target.value)}
+                          placeholder="Nome do setor"
+                        />
+                        <DialogFooter>
+                          <Button variant="outline" onClick={() => setIsAddSectorDialogOpen(false)}>
+                            Cancelar
+                          </Button>
+                          <Button onClick={handleAddSector} disabled={!newSector.trim()}>
+                            Adicionar
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
+            <Button 
+              size="icon"
+              variant="ghost" 
+              className="h-10 w-10 text-green-600"
+              onClick={handleSaveClick}
+            >
+              <Check className="h-5 w-5" />
+            </Button>
+            <Button 
+              size="icon"
+              variant="ghost" 
+              className="h-10 w-10 text-red-600"
+              onClick={handleCancelClick}
+            >
+              <X className="h-5 w-5" />
+            </Button>
+          </div>
+        </div>
+      );
+    }
+    
+    return (
+      <div className="group relative">
+        <h3 className="text-sm font-semibold text-gray-500">Setor Responsável</h3>
+        <div className="flex items-center">
+          <div className="text-navy-900 font-medium flex-grow">
+            {contract.class1_setor || "-"}
+          </div>
+          <Button
+            size="icon"
+            variant="ghost"
+            className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8"
+            onClick={() => handleEditClick("class1_setor", contract.class1_setor)}
           >
             <Edit className="h-4 w-4" />
           </Button>
@@ -268,10 +414,7 @@ export function ContractDetailView({ contract, isLoading }: ContractDetailViewPr
                 <p className="text-navy-900 font-medium">{contract.cod_subacao || "-"}</p>
               </div>
               
-              <div>
-                <h3 className="text-sm font-semibold text-gray-500">Setor Responsável</h3>
-                <p className="text-navy-900 font-medium">{contract.class1_setor || "-"}</p>
-              </div>
+              {renderEditableSector()}
               
               <div>
                 <h3 className="text-sm font-semibold text-gray-500">Tipo</h3>
