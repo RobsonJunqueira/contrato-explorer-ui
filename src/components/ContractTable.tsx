@@ -124,8 +124,8 @@ export const ContractTable = ({
                     <Badge 
                       variant={
                         contract.dias_restantes < 30 ? "destructive" : 
-                        contract.dias_restantes < 90 ? "warning" : 
-                        "success"
+                        contract.dias_restantes < 90 ? "secondary" : 
+                        "outline"
                       }
                     >
                       {contract.dias_restantes}

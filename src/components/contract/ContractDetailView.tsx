@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Contract } from "@/types/Contract";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -49,7 +48,7 @@ export function ContractDetailView({ contract, isLoading }: ContractDetailViewPr
       const success = await updateContractField(contract.id, { [field]: value.trim() });
       if (success) {
         // Update the local contract data to reflect changes immediately
-        contract[field as keyof Contract] = value.trim() as any;
+        (contract as any)[field] = value.trim();
         toast({
           title: "Valor adicionado",
           description: "O novo valor foi adicionado com sucesso.",
@@ -84,7 +83,7 @@ export function ContractDetailView({ contract, isLoading }: ContractDetailViewPr
       const success = await updateContractField(contract.id, { [field]: value });
       if (success) {
         // Update the local contract data to reflect changes immediately
-        contract[field as keyof Contract] = value as any;
+        (contract as any)[field] = value;
       }
     } catch (error) {
       console.error("Error saving field:", error);
@@ -167,7 +166,7 @@ export function ContractDetailView({ contract, isLoading }: ContractDetailViewPr
       <Card>
         <CardHeader className="bg-navy-50">
           <CardTitle className="text-navy-900">
-            Contrato {contract.num_contrato}
+            Contrato {contract?.num_contrato}
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-6">
