@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Contract } from "@/types/Contract";
 import { formatCurrency } from "@/lib/formatters";
@@ -20,8 +20,16 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { Button } from "@/components/ui/button";
-import { Eye } from "lucide-react";
+import { Eye, Settings } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface ContractTableProps {
   contracts: Contract[];
@@ -34,6 +42,16 @@ interface ContractTableProps {
   onSortChange: (field: keyof Contract) => void;
 }
 
+// Available columns with display names
+const availableColumns = [
+  { id: "num_contrato", name: "Número", visible: true },
+  { id: "nom_credor", name: "Credor", visible: true },
+  { id: "dat_fim", name: "Data Fim", visible: true },
+  { id: "dias_restantes", name: "Dias Restantes", visible: true },
+  { id: "val_global", name: "Valor Global", visible: true },
+  { id: "actions", name: "Ações", visible: true }
+];
+
 export const ContractTable = ({
   contracts,
   isLoading,
@@ -45,6 +63,7 @@ export const ContractTable = ({
   onSortChange
 }: ContractTableProps) => {
   const navigate = useNavigate();
+  const [visibleColumns, setVisibleColumns] = useState(availableColumns);
   
   // Function to determine the sort icon based on current sort state
   const getSortIcon = (field: keyof Contract) => {
@@ -65,6 +84,20 @@ export const ContractTable = ({
     );
   };
 
+  // Toggle column visibility
+  const toggleColumnVisibility = (columnId: string) => {
+    setVisibleColumns(
+      visibleColumns.map(col => 
+        col.id === columnId ? { ...col, visible: !col.visible } : col
+      )
+    );
+  };
+
+  // Is column visible
+  const isColumnVisible = (columnId: string) => {
+    return visibleColumns.find(col => col.id === columnId)?.visible || false;
+  };
+
   // Handle loading state
   if (isLoading) {
     return (
@@ -76,25 +109,64 @@ export const ContractTable = ({
 
   return (
     <div className="space-y-4">
+      <div className="flex justify-end mb-2">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" className="ml-auto">
+              <Settings className="h-4 w-4 mr-2" />
+              Colunas
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Colunas visíveis</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            {availableColumns.filter(col => col.id !== "actions").map((column) => (
+              <DropdownMenuCheckboxItem
+                key={column.id}
+                checked={isColumnVisible(column.id)}
+                onCheckedChange={() => toggleColumnVisibility(column.id)}
+              >
+                {column.name}
+              </DropdownMenuCheckboxItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+      
       <div className="border rounded-lg overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="font-medium">
-                {renderSortableHeader("num_contrato", "Número")}
-              </TableHead>
-              <TableHead className="font-medium">
-                {renderSortableHeader("nom_credor", "Credor")}
-              </TableHead>
-              <TableHead className="font-medium hidden md:table-cell">
-                {renderSortableHeader("dat_fim", "Data Fim")}
-              </TableHead>
-              <TableHead className="font-medium hidden md:table-cell">
-                {renderSortableHeader("dias_restantes", "Dias Restantes")}
-              </TableHead>
-              <TableHead className="font-medium hidden lg:table-cell">
-                {renderSortableHeader("val_global", "Valor Global")}
-              </TableHead>
+              {isColumnVisible("num_contrato") && (
+                <TableHead className="font-medium">
+                  {renderSortableHeader("num_contrato", "Número")}
+                </TableHead>
+              )}
+              
+              {isColumnVisible("nom_credor") && (
+                <TableHead className="font-medium">
+                  {renderSortableHeader("nom_credor", "Credor")}
+                </TableHead>
+              )}
+              
+              {isColumnVisible("dat_fim") && (
+                <TableHead className="font-medium hidden md:table-cell">
+                  {renderSortableHeader("dat_fim", "Data Fim")}
+                </TableHead>
+              )}
+              
+              {isColumnVisible("dias_restantes") && (
+                <TableHead className="font-medium hidden md:table-cell">
+                  {renderSortableHeader("dias_restantes", "Dias Restantes")}
+                </TableHead>
+              )}
+              
+              {isColumnVisible("val_global") && (
+                <TableHead className="font-medium hidden lg:table-cell">
+                  {renderSortableHeader("val_global", "Valor Global")}
+                </TableHead>
+              )}
+              
               <TableHead className="font-medium text-right">
                 Ações
               </TableHead>
@@ -104,37 +176,52 @@ export const ContractTable = ({
             {contracts.length > 0 ? (
               contracts.map((contract) => (
                 <TableRow key={contract.id}>
-                  <TableCell>
-                    <div className="flex flex-col">
-                      <span className="text-navy-900 font-medium">{contract.num_contrato}</span>
-                      <span className="text-xs text-gray-500">{contract.dsc_tipo_documento_legal}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-col">
-                      <span className="text-navy-900 font-medium truncate max-w-[200px]">
-                        {contract.nom_credor}
-                      </span>
-                      <span className="text-xs text-gray-500">{contract.num_cnpj_cpf}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    {contract.dat_fim || "-"}
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    <Badge 
-                      variant={
-                        contract.dias_restantes < 30 ? "destructive" : 
-                        contract.dias_restantes < 90 ? "secondary" : 
-                        "outline"
-                      }
-                    >
-                      {contract.dias_restantes}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="hidden lg:table-cell">
-                    {formatCurrency(contract.val_global)}
-                  </TableCell>
+                  {isColumnVisible("num_contrato") && (
+                    <TableCell>
+                      <div className="flex flex-col">
+                        <span className="text-navy-900 font-medium">{contract.num_contrato}</span>
+                        <span className="text-xs text-gray-500">{contract.dsc_tipo_documento_legal}</span>
+                      </div>
+                    </TableCell>
+                  )}
+                  
+                  {isColumnVisible("nom_credor") && (
+                    <TableCell>
+                      <div className="flex flex-col">
+                        <span className="text-navy-900 font-medium truncate max-w-[200px]">
+                          {contract.nom_credor}
+                        </span>
+                        <span className="text-xs text-gray-500">{contract.num_cnpj_cpf}</span>
+                      </div>
+                    </TableCell>
+                  )}
+                  
+                  {isColumnVisible("dat_fim") && (
+                    <TableCell className="hidden md:table-cell">
+                      {contract.dat_fim || "-"}
+                    </TableCell>
+                  )}
+                  
+                  {isColumnVisible("dias_restantes") && (
+                    <TableCell className="hidden md:table-cell">
+                      <Badge 
+                        variant={
+                          contract.dias_restantes < 30 ? "destructive" : 
+                          contract.dias_restantes < 90 ? "secondary" : 
+                          "outline"
+                        }
+                      >
+                        {contract.dias_restantes}
+                      </Badge>
+                    </TableCell>
+                  )}
+                  
+                  {isColumnVisible("val_global") && (
+                    <TableCell className="hidden lg:table-cell">
+                      {formatCurrency(contract.val_global)}
+                    </TableCell>
+                  )}
+                  
                   <TableCell className="text-right">
                     <Button
                       variant="ghost"

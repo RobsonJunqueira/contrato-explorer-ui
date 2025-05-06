@@ -65,12 +65,12 @@ export default function Index() {
               <p className="text-navy-100">Visualize e gerencie todos os contratos ativos e encerrados</p>
             </div>
             {isAuthenticated ? (
-              <Button variant="outline" className="text-white border-white hover:bg-navy-800" onClick={logout}>
+              <Button variant="outline" className="text-white border-white hover:bg-navy-800 bg-navy-700" onClick={logout}>
                 <LogOut className="mr-2 h-4 w-4" />
                 Sair
               </Button>
             ) : (
-              <Button variant="outline" className="text-white border-white hover:bg-navy-800" asChild>
+              <Button variant="outline" className="text-white border-white hover:bg-navy-800 bg-navy-700" asChild>
                 <Link to="/login">
                   <LogIn className="mr-2 h-4 w-4" />
                   Login
@@ -83,7 +83,7 @@ export default function Index() {
 
       {/* Main content */}
       <main className="container mx-auto px-4 py-8">
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+        <div className="bg-white rounded-lg shadow-sm mb-8">
           <FilterBar 
             filters={filters} 
             onFilterChange={handleFilterChange}
@@ -104,10 +104,7 @@ export default function Index() {
           onPageChange={setCurrentPage}
           sortField={sortField}
           sortDirection={sortDirection}
-          onSort={(field, direction) => {
-            setSortField(field);
-            setSortDirection(direction);
-          }}
+          onSortChange={setSortField}
         />
       </main>
     </div>
