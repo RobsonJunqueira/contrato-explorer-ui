@@ -12,7 +12,17 @@ import { LogIn, LogOut } from "lucide-react";
 
 export default function Index() {
   const { allContracts, isLoading, error } = useContracts();
-  const [filters, setFilters] = useState<ContractFilters>({});
+  const [filters, setFilters] = useState<ContractFilters>({
+    num_contrato: "",
+    nom_credor: "",
+    status_vigencia: "",
+    class1_setor: "_all_",
+    nmSubacao: "_all_",
+    dsc_objeto_contrato: "",
+    classif1: "_all_",
+    classif2: "_all_",
+    dsc_tipo_documento_legal: ""
+  });
   const [filteredContracts, setFilteredContracts] = useState(allContracts);
   const { isAuthenticated, logout } = useAuth();
 
@@ -58,16 +68,13 @@ export default function Index() {
         <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
           <FilterBar 
             filters={filters} 
-            onFilterChange={handleFilterChange} 
-            contractsCount={filteredContracts.length}
-            totalCount={allContracts.length}
+            onFilterChange={handleFilterChange}
           />
         </div>
 
         <ContractTable 
           contracts={filteredContracts}
           isLoading={isLoading}
-          error={error}
         />
       </main>
     </div>

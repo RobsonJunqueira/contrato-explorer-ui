@@ -53,7 +53,7 @@ export function ContractDetailView({ contract, isLoading }: ContractDetailViewPr
     if (!contract || !value.trim()) return;
     
     try {
-      const success = await updateContractField(contract.id, { [field]: value.trim() });
+      const success = await updateContractField(contract.id, { [field]: value.trim() } as Partial<Contract>);
       if (success) {
         // Update the local contract data to reflect changes immediately
         (contract as any)[field] = value.trim();
@@ -95,7 +95,7 @@ export function ContractDetailView({ contract, isLoading }: ContractDetailViewPr
     if (!contract || Object.keys(modifiedFields).length === 0) return;
     
     try {
-      const success = await updateContractField(contract.id, modifiedFields);
+      const success = await updateContractField(contract.id, modifiedFields as unknown as Partial<Contract>);
       if (success) {
         // Update the local contract data to reflect changes immediately
         Object.entries(modifiedFields).forEach(([key, value]) => {
@@ -190,8 +190,19 @@ export function ContractDetailView({ contract, isLoading }: ContractDetailViewPr
 
       <Card>
         <CardHeader className="bg-navy-50">
-          <CardTitle className="text-navy-900">
-            Contrato {contract?.num_contrato}
+          <CardTitle className="text-navy-900 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span>Contrato {contract?.num_contrato}</span>
+              <span 
+                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                  contract.status_vigencia === 'VIGENTE' 
+                    ? 'bg-green-100 text-green-800' 
+                    : 'bg-gray-100 text-gray-800'
+                }`}
+              >
+                {contract.status_vigencia}
+              </span>
+            </div>
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-6">
@@ -205,8 +216,17 @@ export function ContractDetailView({ contract, isLoading }: ContractDetailViewPr
             
             <TabsContent value="general" className="space-y-6">
               <div>
-                <h3 className="text-lg font-semibold text-navy-900">Resumo</h3>
-                <p className="text-gray-700 mt-1">{contract.dsc_resumo}</p>
+                <h3 className="text-lg font-semibold text-navy-900">Objeto e Resumo</h3>
+                {contract.dsc_objeto_contrato && (
+                  <div className="mt-2">
+                    <h4 className="text-md font-medium text-gray-700">Objeto do Contrato</h4>
+                    <p className="text-gray-700">{contract.dsc_objeto_contrato}</p>
+                  </div>
+                )}
+                <div className="mt-2">
+                  <h4 className="text-md font-medium text-gray-700">Resumo</h4>
+                  <p className="text-gray-700">{contract.dsc_resumo}</p>
+                </div>
               </div>
               
               <Separator />
@@ -266,13 +286,6 @@ export function ContractDetailView({ contract, isLoading }: ContractDetailViewPr
                 <ContractField label="Unidade Gestora" value={contract.cod_unidade_gestora} />
                 <ContractField label="Processo de Providência" value={contract.processo_providencia} />
               </div>
-
-              {contract.dsc_objeto_contrato && (
-                <div>
-                  <h3 className="text-lg font-semibold text-navy-900">Objeto do Contrato</h3>
-                  <p className="text-gray-700 mt-1">{contract.dsc_objeto_contrato}</p>
-                </div>
-              )}
               
               {contract.observacoes && (
                 <div>
