@@ -5,14 +5,13 @@ import { ContractTable } from "@/components/ContractTable";
 import { FilterBar } from "@/components/FilterBar";
 import { useContracts } from "@/hooks/useContracts";
 import { ContractFilters } from "@/types/Contract";
-import { filterContracts } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import { LogIn, LogOut } from "lucide-react";
 
 export default function Index() {
   const { 
-    contracts, // Changed from allContracts to contracts to use the paginated contracts directly
+    contracts,
     allContracts, 
     isLoading, 
     error,
@@ -43,14 +42,10 @@ export default function Index() {
     classif2: "_all_",
     dsc_tipo_documento_legal: ""
   });
-  const [filteredContracts, setFilteredContracts] = useState(contracts);
+  
+  // Use the contracts directly from the useContracts hook
+  // We don't need to filter them here as that's already handled in the hook
   const { isAuthenticated, logout } = useAuth();
-
-  useEffect(() => {
-    if (allContracts) {
-      setFilteredContracts(filterContracts(allContracts, filters));
-    }
-  }, [allContracts, filters]);
 
   const handleFilterChange = (newFilters: ContractFilters) => {
     setFilters(newFilters);
@@ -100,7 +95,7 @@ export default function Index() {
         </div>
 
         <ContractTable 
-          contracts={filteredContracts}
+          contracts={contracts}
           isLoading={isLoading}
           currentPage={currentPage}
           totalPages={totalPages}

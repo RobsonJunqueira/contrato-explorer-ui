@@ -54,8 +54,8 @@ const availableColumns = [
   { id: "nmSubacao", name: "Subação", visible: false },
   { id: "dsc_tipo_documento_legal", name: "Tipo Doc.", visible: false },
   { id: "dsc_objeto_contrato", name: "Objeto", visible: false },
-  { id: "classif1", name: "Classificação 1", visible: false },
-  { id: "classif2", name: "Classificação 2", visible: false },
+  { id: "classif1", name: "Classificação 1", visible: true }, // Set to visible by default
+  { id: "classif2", name: "Classificação 2", visible: true }, // Set to visible by default
   { id: "actions", name: "Ações", visible: true }
 ];
 
@@ -254,9 +254,9 @@ export const ContractTable = ({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {contracts.length > 0 ? (
+            {contracts && contracts.length > 0 ? (
               contracts.map((contract) => (
-                <TableRow key={contract.id}>
+                <TableRow key={contract.id || contract.num_contrato}>
                   {visibleColumns.filter(col => col.visible).map((column) => (
                     <React.Fragment key={column.id}>
                       {renderCell(contract, column.id)}

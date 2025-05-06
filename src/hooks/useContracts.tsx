@@ -23,7 +23,7 @@ export function useContracts() {
     getStoredValue("contractFilters", {
       num_contrato: "",
       nom_credor: "",
-      status_vigencia: "",
+      status_vigencia: "VIGENTE", // Set default to VIGENTE
       class1_setor: "_all_",
       nmSubacao: "_all_",
       dsc_objeto_contrato: "",
