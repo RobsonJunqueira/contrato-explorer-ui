@@ -35,7 +35,7 @@ export function FilterBar({
   subacaoOptions,
   classif1Options,
   classif2Options,
-  documentTypeOptions 
+  documentTypeOptions = [] // Provide a default empty array
 }: FilterBarProps) {
   // Track selected document types
   const [selectedDocTypes, setSelectedDocTypes] = useState<string[]>(

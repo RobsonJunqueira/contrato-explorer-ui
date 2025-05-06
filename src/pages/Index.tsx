@@ -11,7 +11,25 @@ import { useAuth } from "@/context/AuthContext";
 import { LogIn, LogOut } from "lucide-react";
 
 export default function Index() {
-  const { allContracts, isLoading, error } = useContracts();
+  const { 
+    allContracts, 
+    isLoading, 
+    error,
+    statusOptions,
+    sectorOptions,
+    subacaoOptions,
+    classif1Options,
+    classif2Options,
+    documentTypeOptions,
+    currentPage,
+    setCurrentPage,
+    totalPages,
+    sortField,
+    setSortField,
+    sortDirection,
+    setSortDirection
+  } = useContracts();
+  
   const [filters, setFilters] = useState<ContractFilters>({
     num_contrato: "",
     nom_credor: "",
@@ -69,12 +87,27 @@ export default function Index() {
           <FilterBar 
             filters={filters} 
             onFilterChange={handleFilterChange}
+            statusOptions={statusOptions}
+            sectorOptions={sectorOptions}
+            subacaoOptions={subacaoOptions}
+            classif1Options={classif1Options}
+            classif2Options={classif2Options}
+            documentTypeOptions={documentTypeOptions || []}
           />
         </div>
 
         <ContractTable 
           contracts={filteredContracts}
           isLoading={isLoading}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          sortField={sortField}
+          sortDirection={sortDirection}
+          onSort={(field, direction) => {
+            setSortField(field);
+            setSortDirection(direction);
+          }}
         />
       </main>
     </div>
