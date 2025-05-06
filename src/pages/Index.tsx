@@ -12,6 +12,7 @@ import { LogIn, LogOut } from "lucide-react";
 
 export default function Index() {
   const { 
+    contracts, // Changed from allContracts to contracts to use the paginated contracts directly
     allContracts, 
     isLoading, 
     error,
@@ -30,10 +31,11 @@ export default function Index() {
     setSortDirection
   } = useContracts();
   
+  // Initialize filters with "VIGENTE" selected by default
   const [filters, setFilters] = useState<ContractFilters>({
     num_contrato: "",
     nom_credor: "",
-    status_vigencia: "",
+    status_vigencia: "VIGENTE", // Set default to VIGENTE
     class1_setor: "_all_",
     nmSubacao: "_all_",
     dsc_objeto_contrato: "",
@@ -41,7 +43,7 @@ export default function Index() {
     classif2: "_all_",
     dsc_tipo_documento_legal: ""
   });
-  const [filteredContracts, setFilteredContracts] = useState(allContracts);
+  const [filteredContracts, setFilteredContracts] = useState(contracts);
   const { isAuthenticated, logout } = useAuth();
 
   useEffect(() => {
@@ -93,6 +95,7 @@ export default function Index() {
             classif1Options={classif1Options}
             classif2Options={classif2Options}
             documentTypeOptions={documentTypeOptions || []}
+            defaultExpanded={false} // Set filters to be collapsed by default
           />
         </div>
 

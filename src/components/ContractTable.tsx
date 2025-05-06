@@ -42,13 +42,20 @@ interface ContractTableProps {
   onSortChange: (field: keyof Contract) => void;
 }
 
-// Available columns with display names
+// Extended list of available columns with display names
 const availableColumns = [
   { id: "num_contrato", name: "Número", visible: true },
   { id: "nom_credor", name: "Credor", visible: true },
   { id: "dat_fim", name: "Data Fim", visible: true },
   { id: "dias_restantes", name: "Dias Restantes", visible: true },
   { id: "val_global", name: "Valor Global", visible: true },
+  { id: "status_vigencia", name: "Status", visible: false },
+  { id: "class1_setor", name: "Setor", visible: false },
+  { id: "nmSubacao", name: "Subação", visible: false },
+  { id: "dsc_tipo_documento_legal", name: "Tipo Doc.", visible: false },
+  { id: "dsc_objeto_contrato", name: "Objeto", visible: false },
+  { id: "classif1", name: "Classificação 1", visible: false },
+  { id: "classif2", name: "Classificação 2", visible: false },
   { id: "actions", name: "Ações", visible: true }
 ];
 
@@ -107,6 +114,102 @@ export const ContractTable = ({
     );
   }
 
+  // Function to render the appropriate cell based on column ID
+  const renderCell = (contract: Contract, columnId: string) => {
+    switch (columnId) {
+      case "num_contrato":
+        return (
+          <TableCell>
+            <div className="flex flex-col">
+              <span className="text-navy-900 font-medium">{contract.num_contrato}</span>
+              <span className="text-xs text-gray-500">{contract.dsc_tipo_documento_legal}</span>
+            </div>
+          </TableCell>
+        );
+      case "nom_credor":
+        return (
+          <TableCell>
+            <div className="flex flex-col">
+              <span className="text-navy-900 font-medium truncate max-w-[200px]">
+                {contract.nom_credor}
+              </span>
+              <span className="text-xs text-gray-500">{contract.num_cnpj_cpf}</span>
+            </div>
+          </TableCell>
+        );
+      case "dat_fim":
+        return (
+          <TableCell>{contract.dat_fim || "-"}</TableCell>
+        );
+      case "dias_restantes":
+        return (
+          <TableCell>
+            <Badge 
+              variant={
+                contract.dias_restantes < 30 ? "destructive" : 
+                contract.dias_restantes < 90 ? "secondary" : 
+                "outline"
+              }
+            >
+              {contract.dias_restantes}
+            </Badge>
+          </TableCell>
+        );
+      case "val_global":
+        return (
+          <TableCell>{formatCurrency(contract.val_global)}</TableCell>
+        );
+      case "status_vigencia":
+        return (
+          <TableCell>{contract.status_vigencia}</TableCell>
+        );
+      case "class1_setor":
+        return (
+          <TableCell>{contract.class1_setor || "-"}</TableCell>
+        );
+      case "nmSubacao":
+        return (
+          <TableCell>{contract.nmSubacao || "-"}</TableCell>
+        );
+      case "dsc_tipo_documento_legal":
+        return (
+          <TableCell>{contract.dsc_tipo_documento_legal || "-"}</TableCell>
+        );
+      case "dsc_objeto_contrato":
+        return (
+          <TableCell>
+            <span className="truncate block max-w-[200px]">
+              {contract.dsc_objeto_contrato || "-"}
+            </span>
+          </TableCell>
+        );
+      case "classif1":
+        return (
+          <TableCell>{contract.classif1 || "-"}</TableCell>
+        );
+      case "classif2":
+        return (
+          <TableCell>{contract.classif2 || "-"}</TableCell>
+        );
+      case "actions":
+        return (
+          <TableCell className="text-right">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-navy-700 hover:text-navy-900 hover:bg-navy-50 p-2 h-8 w-8"
+              onClick={() => navigate(`/contrato/${contract.id}`)}
+            >
+              <Eye className="h-4 w-4" />
+              <span className="sr-only">Ver detalhes</span>
+            </Button>
+          </TableCell>
+        );
+      default:
+        return <TableCell>-</TableCell>;
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex justify-end mb-2">
@@ -137,107 +240,33 @@ export const ContractTable = ({
         <Table>
           <TableHeader>
             <TableRow>
-              {isColumnVisible("num_contrato") && (
-                <TableHead className="font-medium">
-                  {renderSortableHeader("num_contrato", "Número")}
-                </TableHead>
-              )}
-              
-              {isColumnVisible("nom_credor") && (
-                <TableHead className="font-medium">
-                  {renderSortableHeader("nom_credor", "Credor")}
-                </TableHead>
-              )}
-              
-              {isColumnVisible("dat_fim") && (
-                <TableHead className="font-medium hidden md:table-cell">
-                  {renderSortableHeader("dat_fim", "Data Fim")}
-                </TableHead>
-              )}
-              
-              {isColumnVisible("dias_restantes") && (
-                <TableHead className="font-medium hidden md:table-cell">
-                  {renderSortableHeader("dias_restantes", "Dias Restantes")}
-                </TableHead>
-              )}
-              
-              {isColumnVisible("val_global") && (
-                <TableHead className="font-medium hidden lg:table-cell">
-                  {renderSortableHeader("val_global", "Valor Global")}
-                </TableHead>
-              )}
-              
-              <TableHead className="font-medium text-right">
-                Ações
-              </TableHead>
+              {visibleColumns.filter(col => col.visible).map((column) => (
+                column.id === "actions" ? (
+                  <TableHead key={column.id} className="font-medium text-right">
+                    {column.name}
+                  </TableHead>
+                ) : (
+                  <TableHead key={column.id} className="font-medium">
+                    {renderSortableHeader(column.id as keyof Contract, column.name)}
+                  </TableHead>
+                )
+              ))}
             </TableRow>
           </TableHeader>
           <TableBody>
             {contracts.length > 0 ? (
               contracts.map((contract) => (
                 <TableRow key={contract.id}>
-                  {isColumnVisible("num_contrato") && (
-                    <TableCell>
-                      <div className="flex flex-col">
-                        <span className="text-navy-900 font-medium">{contract.num_contrato}</span>
-                        <span className="text-xs text-gray-500">{contract.dsc_tipo_documento_legal}</span>
-                      </div>
-                    </TableCell>
-                  )}
-                  
-                  {isColumnVisible("nom_credor") && (
-                    <TableCell>
-                      <div className="flex flex-col">
-                        <span className="text-navy-900 font-medium truncate max-w-[200px]">
-                          {contract.nom_credor}
-                        </span>
-                        <span className="text-xs text-gray-500">{contract.num_cnpj_cpf}</span>
-                      </div>
-                    </TableCell>
-                  )}
-                  
-                  {isColumnVisible("dat_fim") && (
-                    <TableCell className="hidden md:table-cell">
-                      {contract.dat_fim || "-"}
-                    </TableCell>
-                  )}
-                  
-                  {isColumnVisible("dias_restantes") && (
-                    <TableCell className="hidden md:table-cell">
-                      <Badge 
-                        variant={
-                          contract.dias_restantes < 30 ? "destructive" : 
-                          contract.dias_restantes < 90 ? "secondary" : 
-                          "outline"
-                        }
-                      >
-                        {contract.dias_restantes}
-                      </Badge>
-                    </TableCell>
-                  )}
-                  
-                  {isColumnVisible("val_global") && (
-                    <TableCell className="hidden lg:table-cell">
-                      {formatCurrency(contract.val_global)}
-                    </TableCell>
-                  )}
-                  
-                  <TableCell className="text-right">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-navy-700 hover:text-navy-900 hover:bg-navy-50 p-2 h-8 w-8"
-                      onClick={() => navigate(`/contrato/${contract.id}`)}
-                    >
-                      <Eye className="h-4 w-4" />
-                      <span className="sr-only">Ver detalhes</span>
-                    </Button>
-                  </TableCell>
+                  {visibleColumns.filter(col => col.visible).map((column) => (
+                    <React.Fragment key={column.id}>
+                      {renderCell(contract, column.id)}
+                    </React.Fragment>
+                  ))}
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                <TableCell colSpan={visibleColumns.filter(col => col.visible).length} className="text-center py-8 text-gray-500">
                   Nenhum contrato encontrado com os filtros selecionados.
                 </TableCell>
               </TableRow>

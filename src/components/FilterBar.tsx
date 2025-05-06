@@ -26,6 +26,7 @@ interface FilterBarProps {
   classif1Options: string[];
   classif2Options: string[];
   documentTypeOptions: string[];
+  defaultExpanded?: boolean; // New prop to control initial expanded state
 }
 
 export function FilterBar({ 
@@ -36,15 +37,16 @@ export function FilterBar({
   subacaoOptions,
   classif1Options,
   classif2Options,
-  documentTypeOptions = [] // Provide a default empty array
+  documentTypeOptions = [], // Provide a default empty array
+  defaultExpanded = true // Default to expanded if not specified
 }: FilterBarProps) {
   // Track selected document types
   const [selectedDocTypes, setSelectedDocTypes] = useState<string[]>(
     filters.dsc_tipo_documento_legal ? filters.dsc_tipo_documento_legal.split(',') : []
   );
   
-  // Track if filters are expanded or collapsed
-  const [isExpanded, setIsExpanded] = useState(true);
+  // Track if filters are expanded or collapsed - use the defaultExpanded prop
+  const [isExpanded, setIsExpanded] = useState(defaultExpanded);
 
   const handleFilterChange = (key: keyof ContractFilters, value: string) => {
     // If classif1 changes, reset classif2
