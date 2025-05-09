@@ -15,6 +15,9 @@ export default function Index() {
     allContracts, 
     isLoading, 
     error,
+    filters: hookFilters,
+    setFilters: setHookFilters,
+    filteredCount,
     statusOptions,
     sectorOptions,
     subacaoOptions,
@@ -30,25 +33,16 @@ export default function Index() {
     setSortDirection
   } = useContracts();
   
-  // Initialize filters with "VIGENTE" selected by default
-  const [filters, setFilters] = useState<ContractFilters>({
-    num_contrato: "",
-    nom_credor: "",
-    status_vigencia: "VIGENTE", // Set default to VIGENTE
-    class1_setor: "_all_",
-    nmSubacao: "_all_",
-    dsc_objeto_contrato: "",
-    classif1: "_all_",
-    classif2: "_all_",
-    dsc_tipo_documento_legal: ""
-  });
-  
-  // Use the contracts directly from the useContracts hook
-  // We don't need to filter them here as that's already handled in the hook
+  // Initialize filters state - but sync with hook filters
+  const [filters, setFilters] = useState<ContractFilters>(hookFilters);
   const { isAuthenticated, logout } = useAuth();
 
+  // Update hook filters when local filters change
   const handleFilterChange = (newFilters: ContractFilters) => {
     setFilters(newFilters);
+    setHookFilters(newFilters);
+    // Reset to first page when filters change
+    setCurrentPage(1);
   };
 
   return (
@@ -94,6 +88,11 @@ export default function Index() {
           />
         </div>
 
+        {/* Show filtered count */}
+        <div className="mb-4 text-sm text-gray-600">
+          Exibindo {contracts.length > 0 ? (currentPage - 1) * 20 + 1 : 0} - {Math.min(currentPage * 20, filteredCount)} de {filteredCount} contratos
+        </div>
+
         <ContractTable 
           contracts={contracts}
           isLoading={isLoading}
@@ -102,7 +101,16 @@ export default function Index() {
           onPageChange={setCurrentPage}
           sortField={sortField}
           sortDirection={sortDirection}
-          onSortChange={setSortField}
+          onSortChange={(field) => {
+            // If clicking the same field, toggle direction
+            if (field === sortField) {
+              setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+            } else {
+              // New field, default to ascending
+              setSortField(field);
+              setSortDirection("asc");
+            }
+          }}
         />
       </main>
     </div>

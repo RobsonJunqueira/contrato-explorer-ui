@@ -20,7 +20,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { Button } from "@/components/ui/button";
-import { Eye, Settings } from "lucide-react";
+import { Eye, Settings, ArrowDown, ArrowUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
@@ -75,7 +75,9 @@ export const ContractTable = ({
   // Function to determine the sort icon based on current sort state
   const getSortIcon = (field: keyof Contract) => {
     if (sortField !== field) return null;
-    return sortDirection === "asc" ? "↑" : "↓";
+    return sortDirection === "asc" 
+      ? <ArrowUp className="ml-1 h-4 w-4" /> 
+      : <ArrowDown className="ml-1 h-4 w-4" />;
   };
 
   // Create a sortable header

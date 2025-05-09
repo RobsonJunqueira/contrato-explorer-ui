@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ContractFilters } from "@/types/Contract";
@@ -75,6 +75,15 @@ export function FilterBar({
       dsc_tipo_documento_legal: newSelected.length > 0 ? newSelected.join(',') : '' 
     });
   };
+
+  // Update selectedDocTypes when filters change (in case they're set externally)
+  useEffect(() => {
+    if (filters.dsc_tipo_documento_legal) {
+      setSelectedDocTypes(filters.dsc_tipo_documento_legal.split(','));
+    } else {
+      setSelectedDocTypes([]);
+    }
+  }, [filters.dsc_tipo_documento_legal]);
 
   return (
     <Collapsible className="w-full" open={isExpanded} onOpenChange={setIsExpanded}>
