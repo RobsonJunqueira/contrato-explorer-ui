@@ -6,7 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import { formatCurrency } from "@/lib/formatters";
 import { useContracts } from "@/hooks/useContracts";
 import { useToast } from "@/hooks/use-toast";
-import { ExternalLink, FileText, Save } from "lucide-react";
+import { ExternalLink, FileText, Save, AlertTriangle } from "lucide-react";
 import { EditableField } from "./EditableField";
 import { EditableSelectField } from "./EditableSelectField";
 import { AddOptionDialog } from "./AddOptionDialog";
@@ -16,6 +16,7 @@ import { StatusIndicator } from "./StatusIndicator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
 interface ContractDetailViewProps {
   contract: Contract | undefined;
@@ -209,9 +210,8 @@ export function ContractDetailView({ contract, isLoading }: ContractDetailViewPr
           <Tabs defaultValue="general">
             <TabsList className="mb-4">
               <TabsTrigger value="general">Geral</TabsTrigger>
-              <TabsTrigger value="settings" disabled={!isAuthenticated}>
-                Ajustes {!isAuthenticated && "(requer login)"}
-              </TabsTrigger>
+              <TabsTrigger value="creditor">Credor</TabsTrigger>
+              <TabsTrigger value="settings">Ajustes</TabsTrigger>
             </TabsList>
             
             <TabsContent value="general" className="space-y-6">
@@ -232,18 +232,13 @@ export function ContractDetailView({ contract, isLoading }: ContractDetailViewPr
               <Separator />
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Main contract information */}
+                {/* Main contract information - removed creditor info which now has its own tab */}
                 <ContractField label="Número do Contrato" value={contract.num_contrato} />
                 <ContractField label="Tipo de Documento Legal" value={contract.dsc_tipo_documento_legal || contract.cod_tipo_documento_legal} />
                 <ContractField label="Classificação do Contrato" value={contract["nom-contrato_classificacao"] || contract.cod_contrato_classificacao} />
                 <ContractField label="Tipo de Contrato" value={contract["dsc_tipo-contrato"] || contract.cod_tipo_contrato} />
                 <ContractField label="Modalidade" value={contract.nom_modalidade || contract.cod_modalidade} />
                 <ContractField label="Número do Edital" value={contract.num_edital} />
-                <ContractField label="Credor" value={contract.nom_credor} />
-                <ContractField label="CNPJ/CPF" value={contract.num_cnpj_cpf || contract.num_documento_credor} />
-                <ContractField label="Email do Credor" value={contract.dsc_email_credor} />
-                <ContractField label="Responsável PJ do Credor" value={contract.nom_responsavel_pj_credor} />
-                <ContractField label="Representante do Credor" value={contract.nom_representante_credor} />
                 <ContractField label="Situação do Contrato" value={contract.dsc_situacao_contrato || contract.cod_situacao_contrato} />
                 <ContractField label="Link do Processo" value={contract.link_processo} />
                 <ContractField label="Código da Subação" value={contract.cod_subacao} />
@@ -294,19 +289,52 @@ export function ContractDetailView({ contract, isLoading }: ContractDetailViewPr
                 </div>
               )}
             </TabsContent>
+
+            {/* New Creditor tab */}
+            <TabsContent value="creditor" className="space-y-6">
+              <div>
+                <h3 className="text-lg font-semibold text-navy-900">Informações do Credor</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                  <ContractField label="Nome do Credor" value={contract.nom_credor} />
+                  <ContractField label="CNPJ/CPF" value={contract.num_cnpj_cpf || contract.num_documento_credor} />
+                  <ContractField label="Email do Credor" value={contract.dsc_email_credor} />
+                  <ContractField label="Responsável PJ do Credor" value={contract.nom_responsavel_pj_credor} />
+                  <ContractField label="Representante do Credor" value={contract.nom_representante_credor} />
+                </div>
+              </div>
+            </TabsContent>
             
             <TabsContent value="settings" className="space-y-6">
               <div className="flex justify-between items-center">
                 <h3 className="text-lg font-semibold text-navy-900">Campos Editáveis</h3>
-                <Button 
-                  onClick={handleSaveAllChanges} 
-                  disabled={Object.keys(modifiedFields).length === 0}
-                  className="bg-green-600 hover:bg-green-700"
-                >
-                  <Save className="mr-2 h-4 w-4" />
-                  Salvar Alterações
-                </Button>
+                
+                {isAuthenticated ? (
+                  <Button 
+                    onClick={handleSaveAllChanges} 
+                    disabled={Object.keys(modifiedFields).length === 0}
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    <Save className="mr-2 h-4 w-4" />
+                    Salvar Alterações
+                  </Button>
+                ) : (
+                  <div className="text-amber-600 flex items-center text-sm">
+                    <AlertTriangle className="mr-2 h-4 w-4" />
+                    Login necessário para editar
+                  </div>
+                )}
               </div>
+              
+              {!isAuthenticated && (
+                <Alert className="bg-amber-50 border-amber-200">
+                  <AlertTriangle className="h-4 w-4 text-amber-600" />
+                  <AlertTitle className="text-amber-800">Acesso limitado</AlertTitle>
+                  <AlertDescription className="text-amber-700">
+                    Você precisa estar logado para editar as informações do contrato. 
+                    Por favor, faça login para habilitar as funcionalidades de edição.
+                  </AlertDescription>
+                </Alert>
+              )}
               
               <Separator />
               
@@ -316,6 +344,7 @@ export function ContractDetailView({ contract, isLoading }: ContractDetailViewPr
                   value={contract.link_processo}
                   label="Link do Processo"
                   onSave={(value) => handleSaveField("link_processo", value)}
+                  disabled={!isAuthenticated}
                 />
                 
                 <EditableSelectField
@@ -325,6 +354,7 @@ export function ContractDetailView({ contract, isLoading }: ContractDetailViewPr
                   options={sectorOptions}
                   onSave={(value) => handleSaveField("class1_setor", value)}
                   onAddNew={() => setIsAddSectorDialogOpen(true)}
+                  disabled={!isAuthenticated}
                 />
                 
                 <EditableSelectField
@@ -334,6 +364,7 @@ export function ContractDetailView({ contract, isLoading }: ContractDetailViewPr
                   options={typeOptions}
                   onSave={(value) => handleSaveField("class2_tipo", value)}
                   onAddNew={() => setIsAddTypeDialogOpen(true)}
+                  disabled={!isAuthenticated}
                 />
                 
                 <EditableField
@@ -341,6 +372,7 @@ export function ContractDetailView({ contract, isLoading }: ContractDetailViewPr
                   value={contract.link_processo_providencia}
                   label="Link do Processo de Providência"
                   onSave={(value) => handleSaveField("link_processo_providencia", value)}
+                  disabled={!isAuthenticated}
                 />
                 
                 <EditableSelectField
@@ -350,6 +382,7 @@ export function ContractDetailView({ contract, isLoading }: ContractDetailViewPr
                   options={classif1Options}
                   onSave={(value) => handleSaveField("classif1", value)}
                   onAddNew={() => setIsAddClassif1DialogOpen(true)}
+                  disabled={!isAuthenticated}
                 />
                 
                 <EditableSelectField
@@ -359,6 +392,7 @@ export function ContractDetailView({ contract, isLoading }: ContractDetailViewPr
                   options={classif2Options}
                   onSave={(value) => handleSaveField("classif2", value)}
                   onAddNew={() => setIsAddClassif2DialogOpen(true)}
+                  disabled={!isAuthenticated}
                 />
                 
                 <EditableField
@@ -367,6 +401,7 @@ export function ContractDetailView({ contract, isLoading }: ContractDetailViewPr
                   label="Processo de Providência"
                   isTextarea={true}
                   onSave={(value) => handleSaveField("processo_providencia", value)}
+                  disabled={!isAuthenticated}
                 />
               </div>
             </TabsContent>

@@ -1,9 +1,9 @@
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Check, Edit, X, ExternalLink } from "lucide-react";
+import { Check, X, Edit } from "lucide-react";
 
 interface EditableFieldProps {
   field: string;
@@ -11,23 +11,27 @@ interface EditableFieldProps {
   label: string;
   isTextarea?: boolean;
   onSave: (value: string) => void;
+  disabled?: boolean;
 }
 
-export function EditableField({ field, value, label, isTextarea = false, onSave }: EditableFieldProps) {
+export function EditableField({ 
+  field, 
+  value, 
+  label, 
+  isTextarea = false, 
+  onSave,
+  disabled = false 
+}: EditableFieldProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const [fieldValue, setFieldValue] = useState<string>("");
-
-  const handleEditClick = () => {
-    setIsEditing(true);
-    setFieldValue(value || "");
-  };
-
+  const [fieldValue, setFieldValue] = useState(value || "");
+  
   const handleSaveClick = () => {
     onSave(fieldValue);
     setIsEditing(false);
   };
 
   const handleCancelClick = () => {
+    setFieldValue(value || "");
     setIsEditing(false);
   };
 
@@ -41,7 +45,7 @@ export function EditableField({ field, value, label, isTextarea = false, onSave 
               value={fieldValue}
               onChange={(e) => setFieldValue(e.target.value)}
               className="flex-grow mr-2"
-              rows={2}
+              rows={3}
             />
           ) : (
             <Input
@@ -78,20 +82,22 @@ export function EditableField({ field, value, label, isTextarea = false, onSave 
         <div className="text-navy-900 font-medium flex-grow">
           {field.includes("link") && value ? (
             <a href={value} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline font-medium flex items-center">
-              Acessar <ExternalLink className="h-3 w-3 ml-1" />
+              Acessar <span className="inline-block ml-1">↗</span>
             </a>
           ) : (
             value || "-"
           )}
         </div>
-        <Button
-          size="icon"
-          variant="ghost"
-          className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8"
-          onClick={handleEditClick}
-        >
-          <Edit className="h-4 w-4" />
-        </Button>
+        {!disabled && (
+          <Button
+            size="icon"
+            variant="ghost"
+            className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8"
+            onClick={() => setIsEditing(true)}
+          >
+            <Edit className="h-4 w-4" />
+          </Button>
+        )}
       </div>
     </div>
   );

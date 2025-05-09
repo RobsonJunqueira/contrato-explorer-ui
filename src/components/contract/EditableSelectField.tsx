@@ -1,7 +1,7 @@
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Check, Edit, Plus, X } from "lucide-react";
+import { Check, X, Edit, Plus } from "lucide-react";
 import { 
   Select, 
   SelectContent, 
@@ -18,6 +18,7 @@ interface EditableSelectFieldProps {
   options: string[];
   onSave: (value: string) => void;
   onAddNew: () => void;
+  disabled?: boolean;
 }
 
 export function EditableSelectField({ 
@@ -25,23 +26,20 @@ export function EditableSelectField({
   value, 
   label, 
   options, 
-  onSave,
-  onAddNew
+  onSave, 
+  onAddNew,
+  disabled = false 
 }: EditableSelectFieldProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const [fieldValue, setFieldValue] = useState<string>("");
-
-  const handleEditClick = () => {
-    setIsEditing(true);
-    setFieldValue(value || "");
-  };
-
+  const [fieldValue, setFieldValue] = useState(value || "");
+  
   const handleSaveClick = () => {
     onSave(fieldValue);
     setIsEditing(false);
   };
 
   const handleCancelClick = () => {
+    setFieldValue(value || "");
     setIsEditing(false);
   };
 
@@ -108,14 +106,16 @@ export function EditableSelectField({
         <div className="text-navy-900 font-medium flex-grow">
           {value || "-"}
         </div>
-        <Button
-          size="icon"
-          variant="ghost"
-          className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8"
-          onClick={handleEditClick}
-        >
-          <Edit className="h-4 w-4" />
-        </Button>
+        {!disabled && (
+          <Button
+            size="icon"
+            variant="ghost"
+            className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8"
+            onClick={() => setIsEditing(true)}
+          >
+            <Edit className="h-4 w-4" />
+          </Button>
+        )}
       </div>
     </div>
   );
